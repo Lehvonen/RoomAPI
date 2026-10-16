@@ -140,7 +140,7 @@ Prompt (verbatim):
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #16. The prompt was AI-drafted. |
+| Who prompted | AI-drafted; reviewed and approved by Ivar Lehvonen after the run (2026-10-16). |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `3169baa` (setup), `9fa2bd1`–`61b71d7` (foundation), `6a2ef7c` (tasks marked done) |
 | Purpose | Build the project setup and foundation (issue #16, tasks T001–T013) without starting any user story. |
