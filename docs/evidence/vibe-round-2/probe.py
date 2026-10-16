@@ -2,7 +2,7 @@
 
 Same checks as docs/evidence/vibe-round-1/probe.py, changed only where round 2's new rules
 force it: stronger test passwords (the old ones are now rejected), OK3 moved inside
-opening hours so it tests "in the past" rather than "closed", and one new check (N1).
+opening hours so it tests "in the past" rather than "closed", and two new checks (N1, N1b).
 
 Runs each check against a fresh throwaway database through FastAPI's TestClient
 and prints one line per check. It does not modify anything in vibe/.
@@ -103,8 +103,8 @@ def main():
     with fresh_api() as (c, admin, alice, room, _):
         local = TOMORROW.replace(tzinfo=None) + timedelta(hours=9)
         r = book(c, alice, room["id"], local.isoformat(), (local + timedelta(hours=1)).isoformat())
-        report("P6", f"booking sent as naive {local.time()} (meant as Helsinki summer time, UTC+3)", r,
-               f"stored start_time={r.json().get('start_time')}")
+        report("P6", f"booking sent as naive {local.time()} (meant as Helsinki local time)", r,
+               f"returned start_time={r.json().get('start_time')} (stored as UTC)")
 
     # P7 Weak passwords accepted
     with fresh_api() as (c, admin, alice, room, _):
@@ -123,6 +123,14 @@ def main():
             c.post("/auth/login", data={"username": "alice", "password": f"attacker-guess-{i}"})
         r = c.post("/auth/login", data={"username": "alice", "password": "Probe-pass-2026"})
         report("N1", "attacker sends 5 wrong passwords for alice, then alice logs in correctly", r,
+               "alice locked out" if r.status_code == 429 else "alice gets in")
+
+    # N1b New in round 2: failures from one IP with any usernames lock out every user behind that IP
+    with fresh_api() as (c, admin, alice, room, _):
+        for i in range(20):
+            c.post("/auth/login", data={"username": f"ghost{i}", "password": "attacker-guess"})
+        r = c.post("/auth/login", data={"username": "alice", "password": "Probe-pass-2026"})
+        report("N1b", "20 wrong logins for 20 non-existent usernames from one IP, then alice logs in correctly", r,
                "alice locked out" if r.status_code == 429 else "alice gets in")
 
     # Checks that held
