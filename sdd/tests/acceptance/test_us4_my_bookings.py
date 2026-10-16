@@ -50,10 +50,13 @@ def test_cancel_own_booking_frees_the_slot(client, user, other_user, room):
     assert client.delete(f"/bookings/{booking['id']}", headers=user).status_code == 204
     assert my_bookings(client, user) == []
     # The cancelled booking no longer blocks its slot, for bookings or availability (FR-013).
-    assert book(client, other_user, room["id"], helsinki(2, 10), helsinki(2, 11)).status_code == 201
+    rebooked = book(client, other_user, room["id"], helsinki(2, 10), helsinki(2, 11))
+    assert rebooked.status_code == 201
     params = {"date": helsinki_date(2).isoformat()}
     booked = client.get(f"/rooms/{room['id']}/availability", params=params, headers=user).json()["booked"]
-    assert len(booked) == 1
+    # Exactly one booked interval, and it is the new booking's, not the cancelled one's.
+    assert [(s["start"], s["end"]) for s in booked] == [(rebooked.json()["start_time"], rebooked.json()["end_time"])]
+    assert rebooked.json()["id"] != booking["id"]
 
 
 @in_process_only

@@ -3,7 +3,7 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -43,13 +43,13 @@ def get_room(room_id: RoomId, user: User = Depends(get_current_user),
 @router.get("/rooms/{room_id}/availability", response_model=Availability, responses=NOT_FOUND)
 def room_availability(
     room_id: RoomId,
-    date: date,
+    day: date = Query(alias="date", description="A Helsinki calendar date, YYYY-MM-DD"),
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ) -> Availability:
     """Booked and free intervals within that Helsinki date's opening hours, in UTC (FR-010)."""
     room = get_visible_room(session, room_id, user)
-    opens, closes = opening_window(date)
+    opens, closes = opening_window(day)
     bookings = session.scalars(
         select(Booking)
         .where(
@@ -73,4 +73,4 @@ def room_availability(
     if cursor < closes:
         free.append(TimeSlot(start=cursor, end=closes))
 
-    return Availability(room_id=room.id, date=date, opens_at=opens, closes_at=closes, booked=booked, free=free)
+    return Availability(room_id=room.id, date=day, opens_at=opens, closes_at=closes, booked=booked, free=free)
