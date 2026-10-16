@@ -27,7 +27,7 @@ description: "Task list for the Room Booking API"
 - [ ] T001 Create the uv project in `pyproject.toml`: `requires-python = ">=3.11"`; dependencies fastapi, uvicorn, sqlalchemy>=2, pydantic>=2, argon2-cffi, pyjwt, tzdata, python-multipart; dev dependencies pytest, pytest-cov, httpx. Run `uv lock` to create `uv.lock`
 - [ ] T002 [P] Create the package skeleton `app/__init__.py`, `app/routers/__init__.py`, `tests/__init__.py`, `tests/acceptance/__init__.py`, `tests/unit/__init__.py`
 - [ ] T003 [P] Add `.gitignore` entries for `*.db`, `.venv/`, `.coverage`, `htmlcov/` in `sdd/.gitignore`
-- [ ] T004 [P] Add the GitHub Actions workflow `.github/workflows/sdd-tests.yml` (repository root): on push and pull_request, `astral-sh/setup-uv`, `uv sync` and `uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=80`, with working directory `sdd`
+- [ ] T004 [P] Add the GitHub Actions workflow `.github/workflows/sdd-tests.yml` (repository root): on push and pull_request, `astral-sh/setup-uv`, `uv sync` and `uv run pytest --cov=app --cov-report=term-missing`, with working directory `sdd`. The 80% gate (`--cov-fail-under=80`, SC-005) is switched on in T035, once every story has tests
 
 ---
 
@@ -60,8 +60,9 @@ description: "Task list for the Room Booking API"
   - `register_and_login` and `auth` helpers
   - `helsinki(days_ahead, hh, mm)`, which returns an ISO string with the correct offset
   - `ROOMAPI_LOGIN_DELAY_SECONDS=0.2` by default, overridden in the slow-down test
+  - a smoke test of `GET /health` (no token needed, NFR-002) in `tests/acceptance/test_health.py`, so CI has a passing test from the start
 
-**Checkpoint**: the foundation is ready. `uv run pytest` runs and collects zero tests.
+**Checkpoint**: the foundation is ready. `uv run pytest` runs the health smoke test, and CI is green.
 
 ---
 
@@ -210,7 +211,7 @@ description: "Task list for the Room Booking API"
 - [ ] T032 [P] Timing test in `tests/acceptance/test_nfr_performance.py` (NFR-006): with 1,000 bookings seeded, each operation responds in under 500 ms
 - [ ] T033 [P] Security checks in `tests/acceptance/test_nfr_security.py` (NFR-001): the stored hash starts with `$argon2id$` and differs for two users with the same password; no response body contains the password
 - [ ] T034 [P] Interface documentation test in `tests/acceptance/test_nfr_docs.py` (NFR-007): `/openapi.json` lists every endpoint in contracts/api.md, with its error responses
-- [ ] T035 Write the traceability table from each FR, NFR and SC to its tests in `specs/001-room-booking-api/traceability.md`
+- [ ] T035 Write the traceability table from each FR, NFR and SC to its tests in `specs/001-room-booking-api/traceability.md`, and switch on the CI coverage gate `--cov-fail-under=80` (SC-005) in `.github/workflows/sdd-tests.yml`
 - [ ] T036 [P] Export the OpenAPI document to `../docs/openapi.json`, and add the run instructions to `sdd/README.md`
 - [ ] T037 Run the [quickstart.md](quickstart.md) validation, including the suite against the vibe version via `ROOMAPI_BASE_URL`, and save the output in `../docs/evidence/`
 
