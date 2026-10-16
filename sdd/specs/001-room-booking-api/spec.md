@@ -112,7 +112,8 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 - Cancelling an already cancelled booking is refused.
 - A cancelled booking does not block its slot.
 - An expired or tampered access token is refused like a missing one.
-- What happens to future bookings when their room is deactivated: see FR-009.
+- A room with future bookings cannot be deactivated until they are cancelled (FR-009).
+- On days when Helsinki changes between summer and winter time, opening hours follow local clock time.
 
 ## Requirements *(mandatory)*
 
@@ -139,8 +140,8 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
   *Acceptance*: User Story 3, scenario 1.
 - **FR-008**: The system MUST let admins create rooms (unique name regardless of case, capacity at least 1, optional location and description) and edit any of these fields.
   *Acceptance*: User Story 5, scenarios 1–2.
-- **FR-009**: The system MUST let admins deactivate and reactivate a room. Inactive rooms MUST NOT be listed to regular users and MUST NOT accept new bookings. Existing future bookings of a deactivated room: [NEEDS CLARIFICATION: are they cancelled automatically, kept, or does deactivation get refused while they exist?]
-  *Acceptance*: User Story 5, scenario 3.
+- **FR-009**: The system MUST let admins deactivate and reactivate a room. Inactive rooms MUST NOT be listed to regular users and MUST NOT accept new bookings. Deactivation MUST be refused while the room has active bookings that have not ended; the refusal says how many there are. The admin cancels them first (FR-015), so every cancellation records who made it.
+  *Acceptance*: User Story 5, scenario 3; a room with one future booking cannot be deactivated until that booking is cancelled.
 
 **Availability**
 
@@ -151,16 +152,16 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 
 - **FR-011**: The system MUST let a logged-in user book an active room for a time range whose end is after its start and whose start is not in the past.
   *Acceptance*: User Story 2, scenarios 1 and 4.
-- **FR-012**: Bookings MUST also respect the organisation's booking rules: [NEEDS CLARIFICATION: opening hours (if any) and the maximum length of one booking]
-  *Acceptance*: to be defined with the rules.
+- **FR-012**: A booking MUST start and end within opening hours, 08:00–18:00 in the organisation's time zone (Europe/Helsinki), on the same calendar day, and MUST last at most 4 hours.
+  *Acceptance*: in Helsinki time, 08:00–12:00 is accepted; 07:30–08:30, 17:00–18:30, 09:00–13:30 and 17:00 to 09:00 the next day are refused, each with a message naming the rule.
 - **FR-013**: The system MUST never accept two active bookings for the same room whose time ranges overlap. Ranges include their start and exclude their end, so back-to-back bookings are allowed. This MUST hold for simultaneous requests.
   *Acceptance*: User Story 2, scenarios 2, 3 and 5.
 - **FR-014**: The system MUST let a logged-in user list their own upcoming bookings, oldest first.
   *Acceptance*: User Story 4, scenario 1.
 - **FR-015**: The system MUST let users cancel their own bookings that have not ended, and let admins cancel any booking. Cancelled bookings MUST be kept with their status, the time of cancellation and who cancelled them, and MUST free their slot. Cancelling someone else's booking as a regular user MUST be refused.
   *Acceptance*: User Story 4, scenarios 2–3; User Story 5, scenario 4.
-- **FR-016**: Changing an existing booking: [NEEDS CLARIFICATION: can a booking's time or room be edited, or only cancelled and booked again?]
-  *Acceptance*: to be defined with the answer.
+- **FR-016**: Bookings MUST NOT be editable. To change a booking, the user cancels it and books again.
+  *Acceptance*: no operation changes the room, start or end of an existing booking.
 
 **Time**
 
@@ -215,7 +216,7 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 
 ## Assumptions
 
-- The organisation works in one time zone, but clients always send explicit offsets (FR-017), so the system never needs to know it.
+- The organisation works in one time zone, Europe/Helsinki. The system uses it only to check opening hours (FR-012); clients still send explicit offsets (FR-017) and get UTC back.
 - Login attempts are not rate-limited in this version. The system runs locally for one organisation; rate limiting belongs to the network layer in front of it.
 - Admins are few and trusted. There is no audit log beyond who cancelled a booking.
 - Rooms are never deleted, only deactivated, so past bookings keep a valid room.
