@@ -13,15 +13,15 @@ Fill every `TODO` from what you actually did and saw. Nothing here should be rec
 |---|---|
 | Date | 2026-10-13 |
 | Who prompted | Ivar Lehvonen |
-| Tool / model | Claude Code (TODO: model name) |
+| Tool / model | Claude Code, Opus 5.5 |
 | Commit | `75113b5` |
 | Raw output | [`round-1-output.md`](round-1-output.md) (terminal paste, not verbatim; see the note at its top) |
-| Purpose | TODO |
-| Reasoning for the wording | TODO |
-| Expected result | TODO |
+| Purpose | Get a working baseline API for the vibe-vs-SDD comparison, with no spec. |
+| Reasoning for the wording | Plain feature list, the way a developer would describe it, deliberately without rules or restrictions, so the agent's own choices show. |
+| Expected result | A somewhat runnable API covering partially the features, with gaps in edge cases |
 | What came back | FastAPI + SQLite API in `vibe/`: register/login with JWT, list rooms, room availability, create/list/cancel bookings, admins create and edit rooms and cancel any booking, admin created via a CLI command. The agent wrote 21 tests and reported all passing. |
 | Choices the agent made without being asked | Times without a timezone treated as UTC; no booking in the past; regular users can't cancel an ended booking; cancelled bookings kept with status `cancelled`; random JWT key if `ROOMAPI_SECRET_KEY` is unset. |
-| Met expectations? | TODO |
+| Met expectations? | It ran and covered all of the features, but missed limits that wasnt specified |
 | Issues (incorrect, incomplete or inefficient code) | Found afterwards by probing; none was caught by the agent's own 21 tests. 4 real bugs: 3 inputs cause an unhandled error (HTTP 500), and deactivating a room leaves its bookings active. 5 rules the prompt never specified, where the agent picked a default without asking. See §3.3 and [`docs/evidence/vibe-round-1/findings.md`](../evidence/vibe-round-1/findings.md). |
 | Refinement and why | Round 2: the probe failures were turned into a loose list of symptoms, without saying how to fix them (see Round 2). |
 
