@@ -1,16 +1,57 @@
 """Request and response models."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from .config import SQLITE_MAX_INT
 from .db import to_utc
+
+# Database IDs are positive and must fit in SQLite's 64-bit INTEGER.
+DbId = Annotated[int, Field(ge=1, le=SQLITE_MAX_INT)]
+
+PASSWORD_MIN_LENGTH = 10
+PASSWORD_MIN_DISTINCT_CHARS = 5
+# Small blocklist of very common passwords that would otherwise pass the rules below.
+COMMON_PASSWORDS = {
+    "password1", "password12", "password123", "password1234", "passw0rd123",
+    "qwerty1234", "qwerty12345", "qwertyuiop1", "1q2w3e4r5t", "1qaz2wsx3edc",
+    "abc1234567", "abcd123456", "iloveyou12", "welcome123", "letmein123",
+    "admin12345", "salasana12", "salasana123", "salasana1234",
+}
+
+
+def password_problem(password: str, username: str) -> str | None:
+    """Return why a password is too weak, or None if it is acceptable."""
+    if len(password) < PASSWORD_MIN_LENGTH:
+        return f"password must be at least {PASSWORD_MIN_LENGTH} characters"
+    if not any(c.isalpha() for c in password) or all(c.isalpha() for c in password):
+        return "password must contain letters and at least one digit or symbol"
+    if len(set(password.lower())) < PASSWORD_MIN_DISTINCT_CHARS:
+        return f"password must contain at least {PASSWORD_MIN_DISTINCT_CHARS} different characters"
+    if username and username.lower() in password.lower():
+        return "password must not contain the username"
+    if password.lower() in COMMON_PASSWORDS:
+        return "password is too common"
+    return None
 
 
 class UserCreate(BaseModel):
     username: str = Field(min_length=3, max_length=50, pattern=r"^[A-Za-z0-9_.-]+$")
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(
+        min_length=PASSWORD_MIN_LENGTH,
+        max_length=128,
+        description="At least 10 characters with letters and a digit or symbol, at least 5 different "
+        "characters, not containing the username, and not a common password",
+    )
+
+    @model_validator(mode="after")
+    def strong_password(self):
+        problem = password_problem(self.password, self.username)
+        if problem:
+            raise ValueError(problem)
+        return self
 
 
 class UserOut(BaseModel):
@@ -74,9 +115,9 @@ class Availability(BaseModel):
 
 
 class BookingCreate(BaseModel):
-    room_id: int
-    start_time: datetime = Field(description="ISO-8601; times without an offset are treated as UTC")
-    end_time: datetime = Field(description="ISO-8601; times without an offset are treated as UTC")
+    room_id: DbId
+    start_time: datetime = Field(description="ISO-8601; times without an offset are Finnish local time")
+    end_time: datetime = Field(description="ISO-8601; times without an offset are Finnish local time")
 
     @field_validator("start_time", "end_time")
     @classmethod

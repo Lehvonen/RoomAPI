@@ -4,13 +4,19 @@ import os
 os.environ.setdefault("ROOMAPI_PBKDF2_ITERATIONS", "1000")
 os.environ.setdefault("ROOMAPI_SECRET_KEY", "test-secret-key-that-is-long-enough-for-hs256")
 
-from datetime import datetime, timedelta, timezone  # noqa: E402
+from datetime import datetime, timedelta  # noqa: E402
+from zoneinfo import ZoneInfo  # noqa: E402
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.cli import create_admin  # noqa: E402
 from app.main import create_app  # noqa: E402
+
+
+PASSWORD = "Corr3ct-horse"
+ADMIN_PASSWORD = "Adm1n-battery"
+HELSINKI = ZoneInfo("Europe/Helsinki")
 
 
 @pytest.fixture
@@ -24,13 +30,13 @@ def client(db_file):
         yield c
 
 
-def register_and_login(client, username, password="password123"):
+def register_and_login(client, username, password=PASSWORD):
     r = client.post("/auth/register", json={"username": username, "password": password})
     assert r.status_code == 201, r.text
     return login(client, username, password)
 
 
-def login(client, username, password="password123"):
+def login(client, username, password=PASSWORD):
     r = client.post("/auth/login", data={"username": username, "password": password})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
@@ -48,8 +54,8 @@ def other_user(client):
 
 @pytest.fixture
 def admin(client, db_file):
-    create_admin(db_file, "admin", "adminpass123")
-    return login(client, "admin", "adminpass123")
+    create_admin(db_file, "admin", ADMIN_PASSWORD)
+    return login(client, "admin", ADMIN_PASSWORD)
 
 
 @pytest.fixture
@@ -59,7 +65,8 @@ def room(client, admin):
     return r.json()
 
 
-def slot(hours_from_now: float, duration_hours: float = 1):
-    base = (datetime.now(timezone.utc) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-    start = base + timedelta(hours=hours_from_now)
+def slot(hour: float, duration_hours: float = 1):
+    """A slot tomorrow starting at `hour` o'clock Finnish time, as offset-aware ISO strings."""
+    base = (datetime.now(HELSINKI) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    start = base + timedelta(hours=hour)
     return start.isoformat(), (start + timedelta(hours=duration_hours)).isoformat()

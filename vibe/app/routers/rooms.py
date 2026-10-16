@@ -1,15 +1,19 @@
 import sqlite3
-from datetime import datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
+from typing import Annotated, Iterator
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
-from ..db import from_db, get_db, now_utc, to_db, to_utc
+from ..config import CLOSING_TIME, LOCAL_TZ, OPENING_TIME, SQLITE_MAX_INT
+from ..db import from_db, get_db, now_utc, to_db, to_local, to_utc, transaction
 from ..schemas import Availability, RoomCreate, RoomOut, RoomUpdate, TimeSlot
 from ..security import get_current_user, require_admin
 
 router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 MAX_AVAILABILITY_WINDOW = timedelta(days=31)
+
+RoomId = Annotated[int, Path(ge=1, le=SQLITE_MAX_INT)]
 
 
 def room_out(row: sqlite3.Row) -> RoomOut:
@@ -35,7 +39,7 @@ def get_room_or_404(db: sqlite3.Connection, room_id: int, user: sqlite3.Row) -> 
 
 @router.get("", response_model=list[RoomOut])
 def list_rooms(
-    min_capacity: int | None = Query(default=None, ge=1),
+    min_capacity: int | None = Query(default=None, ge=1, le=SQLITE_MAX_INT),
     include_inactive: bool = Query(default=False, description="Admins only"),
     user: sqlite3.Row = Depends(get_current_user),
     db: sqlite3.Connection = Depends(get_db),
@@ -70,43 +74,56 @@ def create_room(
 
 
 @router.get("/{room_id}", response_model=RoomOut)
-def get_room(room_id: int, user: sqlite3.Row = Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
+def get_room(room_id: RoomId, user: sqlite3.Row = Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
     return room_out(get_room_or_404(db, room_id, user))
 
 
 @router.patch("/{room_id}", response_model=RoomOut)
 def update_room(
-    room_id: int,
+    room_id: RoomId,
     body: RoomUpdate,
     admin: sqlite3.Row = Depends(require_admin),
     db: sqlite3.Connection = Depends(get_db),
 ):
+    """Edit a room. Deactivating it (`is_active=false`) also cancels its upcoming and ongoing bookings."""
     get_room_or_404(db, room_id, admin)
     changes = body.model_dump(exclude_unset=True)
     if changes:
         if "is_active" in changes:
             changes["is_active"] = int(changes["is_active"])
-        changes["updated_at"] = to_db(now_utc())
+        now = to_db(now_utc())
+        changes["updated_at"] = now
         assignments = ", ".join(f"{col} = ?" for col in changes)  # columns come from the schema, not the client
-        try:
-            db.execute(f"UPDATE rooms SET {assignments} WHERE id = ?", (*changes.values(), room_id))
-        except sqlite3.IntegrityError:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A room with that name already exists")
+        # One write transaction, so no booking can slip in between deactivation and cancellation.
+        with transaction(db):
+            try:
+                db.execute(f"UPDATE rooms SET {assignments} WHERE id = ?", (*changes.values(), room_id))
+            except sqlite3.IntegrityError:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A room with that name already exists")
+            if changes.get("is_active") == 0:
+                db.execute(
+                    "UPDATE bookings SET status = 'cancelled', cancelled_at = ?, cancelled_by = ?"
+                    " WHERE room_id = ? AND status = 'active' AND end_time > ?",
+                    (now, admin["id"], room_id, now),
+                )
     return room_out(db.execute("SELECT * FROM rooms WHERE id = ?", (room_id,)).fetchone())
 
 
 @router.get("/{room_id}/availability", response_model=Availability)
 def room_availability(
-    room_id: int,
-    start: datetime | None = Query(default=None, description="Window start (default: today 00:00 UTC)"),
+    room_id: RoomId,
+    start: datetime | None = Query(default=None, description="Window start (default: today 00:00 local time)"),
     end: datetime | None = Query(default=None, description="Window end (default: start + 1 day)"),
     user: sqlite3.Row = Depends(get_current_user),
     db: sqlite3.Connection = Depends(get_db),
 ):
-    """Booked and free time slots for a room within a time window (max 31 days)."""
+    """Booked and free (bookable, within opening hours) time slots for a room within a time window (max 31 days)."""
     get_room_or_404(db, room_id, user)
-    start = to_utc(start) if start else datetime.combine(now_utc().date(), time.min, tzinfo=timezone.utc)
-    end = to_utc(end) if end else start + timedelta(days=1)
+    try:
+        start = to_utc(start) if start else to_utc(datetime.combine(to_local(now_utc()).date(), time.min))
+        end = to_utc(end) if end else to_utc(to_local(start) + timedelta(days=1))
+    except (ValueError, OverflowError):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Date is outside the supported range")
     if end <= start:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="end must be after start")
     if end - start > MAX_AVAILABILITY_WINDOW:
@@ -119,17 +136,40 @@ def room_availability(
         (room_id, to_db(end), to_db(start)),
     ).fetchall()
 
-    booked: list[TimeSlot] = []
+    booked = [
+        (max(from_db(r["start_time"]), start), min(from_db(r["end_time"]), end)) for r in rows
+    ]
     free: list[TimeSlot] = []
-    cursor = start
-    for r in rows:
-        b_start = max(from_db(r["start_time"]), start)
-        b_end = min(from_db(r["end_time"]), end)
-        booked.append(TimeSlot(start=b_start, end=b_end))
-        if b_start > cursor:
-            free.append(TimeSlot(start=cursor, end=b_start))
-        cursor = max(cursor, b_end)
-    if cursor < end:
-        free.append(TimeSlot(start=cursor, end=end))
+    for open_start, open_end in opening_hours(start, end):
+        cursor = open_start
+        for b_start, b_end in booked:
+            if b_end <= cursor or b_start >= open_end:
+                continue
+            if b_start > cursor:
+                free.append(TimeSlot(start=to_local(cursor), end=to_local(b_start)))
+            cursor = max(cursor, b_end)
+        if cursor < open_end:
+            free.append(TimeSlot(start=to_local(cursor), end=to_local(open_end)))
 
-    return Availability(room_id=room_id, start=start, end=end, booked=booked, free=free)
+    return Availability(
+        room_id=room_id,
+        start=to_local(start),
+        end=to_local(end),
+        booked=[TimeSlot(start=to_local(s), end=to_local(e)) for s, e in booked],
+        free=free,
+    )
+
+
+def opening_hours(start: datetime, end: datetime) -> Iterator[tuple[datetime, datetime]]:
+    """Each day's opening hours (as UTC intervals) that fall inside [start, end)."""
+    day = to_local(start).date()
+    last = to_local(end).date()
+    while True:
+        o = datetime.combine(day, OPENING_TIME, tzinfo=LOCAL_TZ).astimezone(timezone.utc)
+        c = datetime.combine(day, CLOSING_TIME, tzinfo=LOCAL_TZ).astimezone(timezone.utc)
+        o, c = max(o, start), min(c, end)
+        if o < c:
+            yield o, c
+        if day >= last or day == date.max:
+            break
+        day += timedelta(days=1)
