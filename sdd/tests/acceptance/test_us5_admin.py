@@ -89,7 +89,7 @@ def test_deactivation_refused_while_future_booking_exists(client, admin, user):
     booking = book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).json()
     r = client.patch(f"/rooms/{room['id']}", json={"is_active": False}, headers=admin)
     assert r.status_code == 409
-    assert "1" in r.json()["detail"]  # the refusal says how many bookings block it
+    assert "has 1 active booking" in r.json()["detail"]  # the refusal says how many bookings block it
     assert client.delete(f"/bookings/{booking['id']}", headers=admin).status_code == 204
     assert client.patch(f"/rooms/{room['id']}", json={"is_active": False}, headers=admin).status_code == 200
 

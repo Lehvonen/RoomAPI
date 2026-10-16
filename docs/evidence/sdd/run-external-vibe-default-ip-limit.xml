@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="3.422" timestamp="2026-10-16T15:05:40.021741+03:00" hostname="PC-Lehvonen"><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_failures_for_other_usernames_do_not_slow_a_user" time="3.360"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code">slow_client = &lt;httpx.Client object at 0x00000249EEB89400&gt;
+
+    def test_failures_for_other_usernames_do_not_slow_a_user(slow_client):
+        """20 failures for non-existent usernames from one client must not affect anyone else (no N1b)."""
+        name = registered(slow_client)
+        for i in range(20):
+            attempt(slow_client, unique(f"ghost{i}"))
+        r, elapsed = attempt(slow_client, name, PASSWORD)
+&gt;       assert r.status_code == 200
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code
+
+tests\acceptance\test_nfr_login_slowdown.py:83: AssertionError</failure></testcase></testsuite></testsuites>

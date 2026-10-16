@@ -245,4 +245,26 @@ Prompt (verbatim):
 /speckit-implement Issue group E (#20) ONLY: tasks T027–T028, User Story 5 (admins manage rooms and bookings). Start with the acceptance tests T027 first, including that an admin can cancel any user's booking and an ended booking. After that run them and commit them while they fail, then implement T028 until they pass. Do not continue after T028 and mark only those tasks done.
 ```
 
+### 11. Implement, group F (`/speckit-implement`)
+
+| Field | Entry |
+|---|---|
+| Date | 2026-10-16 |
+| Who prompted | Edited from an AI draft and run by Ivar Lehvonen himself as `/speckit-implement`. He held back the draft and sent the command in his own wording. |
+| Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
+| Commit | `8382962` (NFR tests), `0f49fd8` (login slow-down), `4c9b0f0` (mutation evidence), `f5665ad` (traceability, coverage gate), `572d31c` (OpenAPI, README), `56305bb` (docs test fix), `4852a6b` (three runs and the vibe comparison), `f4efd1a` (tasks marked done) |
+| Purpose | Finish the SDD version: the non-functional requirements, traceability, the coverage gate, the OpenAPI export and the evidence runs (issue #21, tasks T029–T037). |
+| Reasoning for the wording | Keeps tests first for the one piece of new behaviour (the login slow-down), adds the "success clears the failures" rule from the #24 review, and asks for the suite to run against both versions, which is the evidence report §5.3 and §7 need. |
+| Expected result | NFR tests, the slow-down until they pass, traceability.md, the 80% gate, docs/openapi.json, and saved results of the suite against SDD and vibe. |
+| What came back | 61 NFR tests. Only 3 slow-down tests failed before implementation; the other 58 already passed, because the stories had built those properties in (bounded IDs, the horizon check, documented errors). After the slow-down, all 186 pass; coverage 94.83%, with the CI gate at 80%. Two mutation checks show the slow-down tests catch a delay that holds the database lock and a missing clear-on-success ([evidence](../evidence/sdd/login-slowdown-mutation-check.md)). Against a live SDD server, 155 of 155 runnable tests pass. Against vibe `b68a979`, 114 pass and 41 fail: 17 interface differences, 11 undocumented error responses, and 13 rules the vibe agent chose itself where the spec decided otherwise. With vibe's default settings, N1b reproduces ([comparison](../evidence/sdd/vibe-vs-sdd.md)). |
+| Met expectations? | Yes, with three findings, listed under Issues. |
+| Issues (incorrect, incomplete or inefficient output) | (1) Most NFR tests passed before any new code. They guard properties already built, rather than driving new code; only the slow-down tests were truly test-first. (2) The first draft of the slow-down waited while holding the database transaction, which would have stalled every other request. The design caught it before code (a commit before the wait), and a guard test plus a mutation check prove it. (3) The docs test first read `/openapi.json` from the in-process SDD app even in external mode, so against vibe it would have checked SDD's documentation. It now asks the server under test (`56305bb`). |
+| Refinement, why it was needed, and how the revised prompt improved the outcome | Ivar's own wording was used as is; no rerun needed. |
+
+Prompt (verbatim):
+
+```text
+/speckit-implement last issue group (F) (#21): tasks T029–T037, the non-functional requirements and evidence. Start with writing the test tasks first (T029, T030, T032, T033, T034), run them and commit them while they fail, then implement the login slow-down (T031) until they pass; a successful login must also clear that username's failed attempts. Then write the traceability table and switch on the 80% coverage gate (T035), export the OpenAPI document (T036), and run the acceptance suite against both the SDD and the vibe version, saving the results as evidence (T037). Do not continue after T037 and mark only those tasks done.
+```
+
 <!-- Copy a block above for each new prompt. -->

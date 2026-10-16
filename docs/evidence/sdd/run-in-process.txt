@@ -1,0 +1,47 @@
+# In-process run, 2026-10-16T12:00Z, branch feat/sdd-nfr-evidence
+# Command (from sdd/): uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+============================= test session starts =============================
+platform win32 -- Python 3.12.4, pytest-9.1.1, pluggy-1.7.0
+rootdir: C:\Users\lehvo\RoomAPI\sdd
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.15.1, cov-7.1.0
+collected 186 items
+
+tests\acceptance\test_health.py .                                        [  0%]
+tests\acceptance\test_nfr_concurrency.py .                               [  1%]
+tests\acceptance\test_nfr_docs.py ..............                         [  8%]
+tests\acceptance\test_nfr_invalid_input.py ............................. [ 24%]
+.........                                                                [ 29%]
+tests\acceptance\test_nfr_login_slowdown.py ......                       [ 32%]
+tests\acceptance\test_nfr_performance.py .                               [ 32%]
+tests\acceptance\test_nfr_security.py ..                                 [ 33%]
+tests\acceptance\test_us1_accounts.py ........................           [ 46%]
+tests\acceptance\test_us2_booking.py .......................             [ 59%]
+tests\acceptance\test_us3_rooms_availability.py .................        [ 68%]
+tests\acceptance\test_us4_my_bookings.py ..............                  [ 75%]
+tests\acceptance\test_us5_admin.py .........................             [ 89%]
+tests\unit\test_timerules.py ....................                        [100%]
+
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.12.4-final-0 _______________
+
+Name                      Stmts   Miss  Cover   Missing
+-------------------------------------------------------
+app\__init__.py               0      0   100%
+app\cli.py                   47     20    57%   29, 31, 41-42, 49-67, 71
+app\config.py                23      1    96%   34
+app\db.py                    24      0   100%
+app\main.py                  26      1    96%   45
+app\models.py                54      1    98%   28
+app\routers\__init__.py       0      0   100%
+app\routers\auth.py          42      0   100%
+app\routers\bookings.py      50      0   100%
+app\routers\rooms.py         70      0   100%
+app\schemas.py               70      0   100%
+app\security.py              45      1    98%   67
+app\timerules.py             33      1    97%   14
+-------------------------------------------------------
+TOTAL                       484     25    95%
+Required test coverage of 80% reached. Total coverage: 94.83%
+============================ 186 passed in 42.59s =============================

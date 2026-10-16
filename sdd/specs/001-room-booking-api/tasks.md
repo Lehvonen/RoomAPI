@@ -205,15 +205,15 @@ description: "Task list for the Room Booking API"
 
 **Issue group F: Non-functional requirements, traceability and docs**
 
-- [ ] T029 [P] Invalid-input test set in `tests/acceptance/test_nfr_invalid_input.py` (NFR-004, SC-004): IDs 0, −1 and 2^70 in every path and body; dates near year 9999; malformed JSON; missing fields; over-long text. Assert there is never a 500, and always a 4xx with a message
-- [ ] T030 [P] Login slow-down test in `tests/acceptance/test_nfr_login_slowdown.py` (NFR-009): with the delay set to 2 s, the 6th failure within 15 minutes takes ≥ 2 s; a correct password after 10 failures still logs in; failures for non-existent usernames don't affect other users
-- [ ] T031 Implement the login slow-down in `app/routers/auth.py`, using the `failed_logins` table (research R6)
-- [ ] T032 [P] Timing test in `tests/acceptance/test_nfr_performance.py` (NFR-006): with 1,000 bookings seeded, each operation responds in under 500 ms
-- [ ] T033 [P] Security checks in `tests/acceptance/test_nfr_security.py` (NFR-001): the stored hash starts with `$argon2id$` and differs for two users with the same password; no response body contains the password
-- [ ] T034 [P] Interface documentation test in `tests/acceptance/test_nfr_docs.py` (NFR-007): `/openapi.json` lists every endpoint in contracts/api.md, with its error responses
-- [ ] T035 Write the traceability table from each FR, NFR and SC to its tests in `specs/001-room-booking-api/traceability.md`, and switch on the CI coverage gate `--cov-fail-under=80` (SC-005) in `.github/workflows/sdd-tests.yml`
-- [ ] T036 [P] Export the OpenAPI document to `../docs/openapi.json`, and add the run instructions to `sdd/README.md`
-- [ ] T037 Run the [quickstart.md](quickstart.md) validation, including the suite against the vibe version via `ROOMAPI_BASE_URL`, and save the output in `../docs/evidence/`
+- [X] T029 [P] Invalid-input test set in `tests/acceptance/test_nfr_invalid_input.py` (NFR-004, SC-004): IDs 0, −1 and 2^70 in every path and body; dates near year 9999; malformed JSON; missing fields; over-long text. Assert there is never a 500, and always a 4xx with a message
+- [X] T030 [P] Login slow-down test in `tests/acceptance/test_nfr_login_slowdown.py` (NFR-009): with the delay set to 2 s, the 6th failure within 15 minutes takes ≥ 2 s; a correct password after 10 failures still logs in; failures for non-existent usernames don't affect other users
+- [X] T031 Implement the login slow-down in `app/routers/auth.py`, using the `failed_logins` table (research R6)
+- [X] T032 [P] Timing test in `tests/acceptance/test_nfr_performance.py` (NFR-006): with 1,000 bookings seeded, each operation responds in under 500 ms
+- [X] T033 [P] Security checks in `tests/acceptance/test_nfr_security.py` (NFR-001): the stored hash starts with `$argon2id$` and differs for two users with the same password; no response body contains the password
+- [X] T034 [P] Interface documentation test in `tests/acceptance/test_nfr_docs.py` (NFR-007): `/openapi.json` lists every endpoint in contracts/api.md, with its error responses
+- [X] T035 Write the traceability table from each FR, NFR and SC to its tests in `specs/001-room-booking-api/traceability.md`, and switch on the CI coverage gate `--cov-fail-under=80` (SC-005) in `.github/workflows/sdd-tests.yml`
+- [X] T036 [P] Export the OpenAPI document to `../docs/openapi.json`, and add the run instructions to `sdd/README.md`
+- [X] T037 Run the [quickstart.md](quickstart.md) validation, including the suite against the vibe version via `ROOMAPI_BASE_URL`, and save the output in `../docs/evidence/`
 
 ---
 

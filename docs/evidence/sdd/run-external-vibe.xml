@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="41" skipped="11" tests="166" time="77.246" timestamp="2026-10-16T15:04:20.123173+03:00" hostname="PC-Lehvonen"><testcase classname="tests.acceptance.test_health" name="test_health_needs_no_token" time="0.201" /><testcase classname="tests.acceptance.test_nfr_concurrency" name="test_twenty_simultaneous_requests_create_exactly_one_booking" time="6.112" /><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[delete-/bookings/{booking_id}]" time="0.165"><failure message="AssertionError: undocumented errors: {'403', '409', '404'}&#10;assert {'403', '404', '409', '422'} &lt;= {'204', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '403'&#10;  '409'&#10;  '404'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'delete', path = '/bookings/{booking_id}'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'403', '409', '404'}
+E       assert {'403', '404', '409', '422'} &lt;= {'204', '422'}
+E         
+E         Extra items in the left set:
+E         '403'
+E         '409'
+E         '404'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[get-/bookings/me]" time="0.159"><failure message="AssertionError: GET /bookings/me missing from /openapi.json&#10;assert None is not None">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'get', path = '/bookings/me'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+&gt;       assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+E       AssertionError: GET /bookings/me missing from /openapi.json
+E       assert None is not None
+
+tests\acceptance\test_nfr_docs.py:33: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[get-/health]" time="0.152" /><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[get-/rooms]" time="0.150" /><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[get-/rooms/{room_id}]" time="0.175"><failure message="AssertionError: undocumented errors: {'404'}&#10;assert {'404', '422'} &lt;= {'200', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '404'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'get', path = '/rooms/{room_id}'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'404'}
+E       assert {'404', '422'} &lt;= {'200', '422'}
+E         
+E         Extra items in the left set:
+E         '404'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[get-/rooms/{room_id}/availability]" time="0.150"><failure message="AssertionError: undocumented errors: {'404'}&#10;assert {'404', '422'} &lt;= {'200', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '404'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'get', path = '/rooms/{room_id}/availability'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'404'}
+E       assert {'404', '422'} &lt;= {'200', '422'}
+E         
+E         Extra items in the left set:
+E         '404'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[get-/users/me]" time="0.150"><failure message="AssertionError: undocumented errors: {'401'}&#10;assert {'401'} &lt;= {'200'}&#10;  &#10;  Extra items in the left set:&#10;  '401'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'get', path = '/users/me'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'401'}
+E       assert {'401'} &lt;= {'200'}
+E         
+E         Extra items in the left set:
+E         '401'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[patch-/rooms/{room_id}]" time="0.150"><failure message="AssertionError: undocumented errors: {'403', '409', '404'}&#10;assert {'403', '404', '409', '422'} &lt;= {'200', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '403'&#10;  '409'&#10;  '404'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'patch', path = '/rooms/{room_id}'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'403', '409', '404'}
+E       assert {'403', '404', '409', '422'} &lt;= {'200', '422'}
+E         
+E         Extra items in the left set:
+E         '403'
+E         '409'
+E         '404'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[post-/auth/login]" time="0.149"><failure message="AssertionError: undocumented errors: {'401'}&#10;assert {'401', '422'} &lt;= {'200', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '401'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'post', path = '/auth/login'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'401'}
+E       assert {'401', '422'} &lt;= {'200', '422'}
+E         
+E         Extra items in the left set:
+E         '401'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[post-/auth/register]" time="0.150"><failure message="AssertionError: undocumented errors: {'409'}&#10;assert {'409', '422'} &lt;= {'201', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '409'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'post', path = '/auth/register'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'409'}
+E       assert {'409', '422'} &lt;= {'201', '422'}
+E         
+E         Extra items in the left set:
+E         '409'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[post-/bookings]" time="0.148"><failure message="AssertionError: undocumented errors: {'409', '404'}&#10;assert {'404', '409', '422'} &lt;= {'201', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '409'&#10;  '404'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'post', path = '/bookings'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'409', '404'}
+E       assert {'404', '409', '422'} &lt;= {'201', '422'}
+E         
+E         Extra items in the left set:
+E         '409'
+E         '404'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_contract_endpoint_documented_with_its_errors[post-/rooms]" time="0.149"><failure message="AssertionError: undocumented errors: {'403', '409'}&#10;assert {'403', '409', '422'} &lt;= {'201', '422'}&#10;  &#10;  Extra items in the left set:&#10;  '403'&#10;  '409'">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+method = 'post', path = '/rooms'
+
+    @pytest.mark.parametrize("method, path", sorted(CONTRACT))
+    def test_contract_endpoint_documented_with_its_errors(spec, method, path):
+        operation = spec["paths"].get(path, {}).get(method)
+        assert operation is not None, f"{method.upper()} {path} missing from /openapi.json"
+        documented = set(operation.get("responses", {}))
+&gt;       assert CONTRACT[(method, path)] &lt;= documented, f"undocumented errors: {CONTRACT[(method, path)] - documented}"
+E       AssertionError: undocumented errors: {'403', '409'}
+E       assert {'403', '409', '422'} &lt;= {'201', '422'}
+E         
+E         Extra items in the left set:
+E         '403'
+E         '409'
+
+tests\acceptance\test_nfr_docs.py:35: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_no_undocumented_endpoints" time="0.160"><failure message="AssertionError: not in the contract: {('get', '/bookings/{booking_id}'), ('get', '/bookings')}&#10;assert {('delete', '...om_id}'), ...} == {('delete', '...bility'), ...}&#10;  &#10;  Extra items in the left set:&#10;  ('get', '/bookings/{booking_id}')&#10;  ('get', '/bookings')&#10;  Extra items in the right set:&#10;  ('get', '/bookings/me')&#10;  Use -v to get more diff">spec = {'openapi': '3.1.0', 'info': {'title': 'Room Booking API', 'description': 'Register, log in, browse rooms, check avail...emes': {'OAuth2PasswordBearer': {'type': 'oauth2', 'flows': {'password': {'scopes': {}, 'tokenUrl': '/auth/login'}}}}}}
+
+    def test_no_undocumented_endpoints(spec):
+        actual = {(m, p) for p, ops in spec["paths"].items() for m in ops}
+&gt;       assert actual == set(CONTRACT), f"not in the contract: {actual - set(CONTRACT)}"
+E       AssertionError: not in the contract: {('get', '/bookings/{booking_id}'), ('get', '/bookings')}
+E       assert {('delete', '...om_id}'), ...} == {('delete', '...bility'), ...}
+E         
+E         Extra items in the left set:
+E         ('get', '/bookings/{booking_id}')
+E         ('get', '/bookings')
+E         Extra items in the right set:
+E         ('get', '/bookings/me')
+E         Use -v to get more diff
+
+tests\acceptance\test_nfr_docs.py:40: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_docs" name="test_interactive_docs_available" time="0.148" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[GET-/rooms/{id}-0]" time="0.281" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[GET-/rooms/{id}--1]" time="0.282" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[GET-/rooms/{id}-1180591620717411303424]" time="0.282" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[GET-/rooms/{id}/availability?date=2026-11-02-0]" time="0.279" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[GET-/rooms/{id}/availability?date=2026-11-02--1]" time="0.278" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[GET-/rooms/{id}/availability?date=2026-11-02-1180591620717411303424]" time="0.280" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[PATCH-/rooms/{id}-0]" time="0.281" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[PATCH-/rooms/{id}--1]" time="0.291" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[PATCH-/rooms/{id}-1180591620717411303424]" time="0.281" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[DELETE-/bookings/{id}-0]" time="0.281" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[DELETE-/bookings/{id}--1]" time="0.285" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_ids_in_paths[DELETE-/bookings/{id}-1180591620717411303424]" time="0.277" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_room_ids_in_booking_body[0]" time="0.429" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_room_ids_in_booking_body[-1]" time="0.437" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_bad_room_ids_in_booking_body[1180591620717411303424]" time="0.438" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_dates_at_the_edge_of_the_calendar[9999-12-31T23:00:00-05:00-9999-12-31T23:30:00-05:00]" time="0.611" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_dates_at_the_edge_of_the_calendar[2026-10-17T10:00:00+03:00-9999-12-31T23:30:00-05:00]" time="0.605" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_dates_at_the_edge_of_the_calendar[0001-01-01T08:00:00+14:00-0001-01-01T09:00:00+14:00]" time="0.557" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_availability_on_extreme_dates[9999-12-31]" time="0.575" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_availability_on_extreme_dates[0001-01-01]" time="0.566" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_malformed_json[/auth/register]" time="0.277" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_malformed_json[/bookings]" time="0.278" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_malformed_json[/rooms]" time="0.277" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_missing_fields[/auth/register-body0]" time="0.276" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_missing_fields[/auth/register-body1]" time="0.292" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_missing_fields[/bookings-body2]" time="0.281" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_missing_fields[/bookings-body3]" time="0.302" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_missing_fields[/rooms-body4]" time="0.327" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_over_long_text[/auth/register-body0]" time="0.279" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_over_long_text[/auth/register-body1]" time="0.297" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_over_long_text[/rooms-body2]" time="0.324" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_over_long_text[/rooms-body3]" time="0.294" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_wrong_types[body0]" time="0.511" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_wrong_types[body1]" time="0.427" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_wrong_types[body2]" time="0.425" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_wrong_types[body3]" time="0.439" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_wrong_types[just a string]" time="0.451" /><testcase classname="tests.acceptance.test_nfr_invalid_input" name="test_login_with_missing_form_fields" time="0.151" /><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_sixth_failure_within_15_minutes_is_delayed" time="0.986"><failure message="assert 429 == 401&#10; +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code">slow_client = &lt;httpx.Client object at 0x000001C6EF39D280&gt;
+
+    def test_sixth_failure_within_15_minutes_is_delayed(slow_client):
+        name = registered(slow_client)
+        fail(slow_client, name, 5)
+        r, elapsed = attempt(slow_client, name)
+&gt;       assert r.status_code == 401
+E       assert 429 == 401
+E        +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code
+
+tests\acceptance\test_nfr_login_slowdown.py:47: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_correct_password_still_logs_in_after_many_failures" time="1.026"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code">slow_client = &lt;httpx.Client object at 0x000001C6EF35DC10&gt;
+
+    def test_correct_password_still_logs_in_after_many_failures(slow_client):
+        name = registered(slow_client)
+        fail(slow_client, name, 5)
+        attempt(slow_client, name)  # 6th failure, delayed
+        r, elapsed = attempt(slow_client, name, PASSWORD)
+&gt;       assert r.status_code == 200  # never locked out (no N1)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code
+
+tests\acceptance\test_nfr_login_slowdown.py:56: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_successful_login_clears_the_failures" time="1.191"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code">slow_client = &lt;httpx.Client object at 0x000001C6EF3B6990&gt;
+
+    def test_successful_login_clears_the_failures(slow_client):
+        name = registered(slow_client)
+        fail(slow_client, name, 5)
+        r, _ = attempt(slow_client, name, PASSWORD)
+&gt;       assert r.status_code == 200
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429 Too Many Requests]&gt;.status_code
+
+tests\acceptance\test_nfr_login_slowdown.py:64: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_failures_count_regardless_of_letter_case" time="0.978"><failure message="assert 0.004139900000154739 &gt;= 2.0">slow_client = &lt;httpx.Client object at 0x000001C6EF39F500&gt;
+
+    def test_failures_count_regardless_of_letter_case(slow_client):
+        name = registered(slow_client)
+        fail(slow_client, name.upper(), 5)
+        _, elapsed = attempt(slow_client, name)
+&gt;       assert elapsed &gt;= DELAY
+E       assert 0.004139900000154739 &gt;= 2.0
+
+tests\acceptance\test_nfr_login_slowdown.py:74: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_failures_for_other_usernames_do_not_slow_a_user" time="3.197" /><testcase classname="tests.acceptance.test_nfr_login_slowdown" name="test_a_delayed_login_does_not_block_other_requests" time="1.823" /><testcase classname="tests.acceptance.test_nfr_performance" name="test_every_operation_under_500_ms_with_1000_bookings" time="0.000"><skipped type="pytest.skip" message="seeds 1,000 bookings directly in the test database">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_nfr_performance.py:42: seeds 1,000 bookings directly in the test database</skipped></testcase><testcase classname="tests.acceptance.test_nfr_security" name="test_stored_hash_is_salted_argon2id" time="0.000"><skipped type="pytest.skip" message="reads the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_nfr_security.py:13: reads the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_nfr_security" name="test_no_response_contains_the_password" time="0.589" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_register_creates_regular_user_without_password_in_response" time="0.295"><failure message="AssertionError: assert False&#10; +  where False = &lt;built-in method endswith of str object at 0x000001C6EF452C40&gt;('Z')&#10; +    where &lt;built-in method endswith of str object at 0x000001C6EF452C40&gt; = '2026-10-16T15:04:52+03:00'.endswith">client = &lt;httpx.Client object at 0x000001C6EF39D040&gt;
+
+    def test_register_creates_regular_user_without_password_in_response(client):
+        name = unique("alice")
+        r = register(client, name)
+        assert r.status_code == 201, r.text
+        body = r.json()
+        assert body["username"] == name
+        assert body["is_admin"] is False
+        assert set(body) == {"id", "username", "is_admin", "created_at"}
+&gt;       assert body["created_at"].endswith("Z")
+E       AssertionError: assert False
+E        +  where False = &lt;built-in method endswith of str object at 0x000001C6EF452C40&gt;('Z')
+E        +    where &lt;built-in method endswith of str object at 0x000001C6EF452C40&gt; = '2026-10-16T15:04:52+03:00'.endswith
+
+tests\acceptance\test_us1_accounts.py:33: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us1_accounts" name="test_username_taken_regardless_of_case" time="0.420" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_invalid_usernames_refused[ab]" time="0.156" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_invalid_usernames_refused[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]" time="0.154" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_invalid_usernames_refused[bad name]" time="0.154" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_invalid_usernames_refused[bad/name]" time="0.171" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_invalid_usernames_refused[\xe4\xe4kk\xf6nen]" time="0.151" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_username_length_boundaries_accepted[3]" time="0.306" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_username_length_boundaries_accepted[50]" time="0.299" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_password_length[9-422]" time="0.165" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_password_length[10-201]" time="0.152"><failure message="AssertionError: assert 422 == 201&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code&#10; +    where &lt;Response [422 Unprocessable Entity]&gt; = register(&lt;httpx.Client object at 0x000001C6EF3B5430&gt;, 'pw_85733171', password=('p' * 10))&#10; +      where 'pw_85733171' = unique('pw')">client = &lt;httpx.Client object at 0x000001C6EF3B5430&gt;, length = 10
+expected = 201
+
+    @pytest.mark.parametrize("length, expected", [(9, 422), (10, 201), (128, 201), (129, 422)])
+    def test_password_length(client, length, expected):
+&gt;       assert register(client, unique("pw"), password="p" * length).status_code == expected
+E       AssertionError: assert 422 == 201
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+E        +    where &lt;Response [422 Unprocessable Entity]&gt; = register(&lt;httpx.Client object at 0x000001C6EF3B5430&gt;, 'pw_85733171', password=('p' * 10))
+E        +      where 'pw_85733171' = unique('pw')
+
+tests\acceptance\test_us1_accounts.py:69: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us1_accounts" name="test_password_length[128-201]" time="0.154"><failure message="AssertionError: assert 422 == 201&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code&#10; +    where &lt;Response [422 Unprocessable Entity]&gt; = register(&lt;httpx.Client object at 0x000001C6EF35E810&gt;, 'pw_86ba66a4', password=('p' * 128))&#10; +      where 'pw_86ba66a4' = unique('pw')">client = &lt;httpx.Client object at 0x000001C6EF35E810&gt;, length = 128
+expected = 201
+
+    @pytest.mark.parametrize("length, expected", [(9, 422), (10, 201), (128, 201), (129, 422)])
+    def test_password_length(client, length, expected):
+&gt;       assert register(client, unique("pw"), password="p" * length).status_code == expected
+E       AssertionError: assert 422 == 201
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+E        +    where &lt;Response [422 Unprocessable Entity]&gt; = register(&lt;httpx.Client object at 0x000001C6EF35E810&gt;, 'pw_86ba66a4', password=('p' * 128))
+E        +      where 'pw_86ba66a4' = unique('pw')
+
+tests\acceptance\test_us1_accounts.py:69: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us1_accounts" name="test_password_length[129-422]" time="0.155" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_login_returns_bearer_token_valid_for_60_minutes" time="0.454" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_login_is_case_insensitive_on_username" time="0.419" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_wrong_password_and_unknown_user_get_the_same_refusal" time="0.648" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_profile_shows_user_and_no_password_data" time="0.422" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_registration_ignores_admin_request" time="0.296" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_profile_without_token_refused" time="0.165" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_profile_with_tampered_signature_refused" time="0.446" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_profile_with_tampered_claims_refused" time="0.726" /><testcase classname="tests.acceptance.test_us1_accounts" name="test_profile_with_expired_token_refused" time="0.000"><skipped type="pytest.skip" message="needs the test server's database or secret">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us1_accounts.py:148: needs the test server's database or secret</skipped></testcase><testcase classname="tests.acceptance.test_us1_accounts" name="test_failed_login_username_stored_lower_case_and_at_most_50_characters" time="0.000"><skipped type="pytest.skip" message="needs the test server's database or secret">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us1_accounts.py:164: needs the test server's database or secret</skipped></testcase><testcase classname="tests.acceptance.test_us1_accounts" name="test_successful_login_after_register_helper" time="0.429" /><testcase classname="tests.acceptance.test_us2_booking" name="test_book_free_slot" time="0.573"><failure message="AssertionError: 2026-10-17T10:00:00+03:00&#10;assert False&#10; +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4B8440&gt;('Z')&#10; +    where &lt;built-in method endswith of str object at 0x000001C6EF4B8440&gt; = '2026-10-17T10:00:00+03:00'.endswith">client = &lt;httpx.Client object at 0x000001C6EF386900&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NiIsImlhdCI6MTc5MjE1MjI5OSwiZXhwIjoxNzkyMTU1ODk5fQ.aJD_VO_ae7i2Fiotu58pFjnTgyePBWhBYdEFXcuVIfY'}
+room = {'id': 7, 'name': 'room_76577b37', 'capacity': 8, 'location': None, ...}
+
+    def test_book_free_slot(client, user, room):
+        r = book(client, user, room["id"], helsinki(1, 10), helsinki(1, 11))
+        assert r.status_code == 201, r.text
+        body = r.json()
+        assert body["room_id"] == room["id"]
+        assert body["room_name"] == room["name"]
+        assert body["status"] == "active"
+&gt;       assert parse_z(body["start_time"]) == datetime.fromisoformat(helsinki(1, 10))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\acceptance\test_us2_booking.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+value = '2026-10-17T10:00:00+03:00'
+
+    def parse_z(value: str) -&gt; datetime:
+&gt;       assert value.endswith("Z"), value
+E       AssertionError: 2026-10-17T10:00:00+03:00
+E       assert False
+E        +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4B8440&gt;('Z')
+E        +    where &lt;built-in method endswith of str object at 0x000001C6EF4B8440&gt; = '2026-10-17T10:00:00+03:00'.endswith
+
+tests\acceptance\test_us2_booking.py:10: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_offset_input_returned_as_utc" time="0.603"><failure message="AssertionError: assert False&#10; +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4B96B0&gt;('Z')&#10; +    where &lt;built-in method endswith of str object at 0x000001C6EF4B96B0&gt; = '2026-10-18T09:00:00+03:00'.endswith">client = &lt;httpx.Client object at 0x000001C6EF44DB80&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NyIsImlhdCI6MTc5MjE1MjI5OSwiZXhwIjoxNzkyMTU1ODk5fQ._SXjVxPj7uhIAG8kWzmFfiMoaBjoy8iuLdretosCvDQ'}
+room = {'id': 8, 'name': 'room_c4117d29', 'capacity': 8, 'location': None, ...}
+
+    def test_offset_input_returned_as_utc(client, user, room):
+        start = helsinki(2, 9)  # carries +03:00 in summer, +02:00 in winter
+        r = book(client, user, room["id"], start, helsinki(2, 10))
+        assert r.status_code == 201, r.text
+&gt;       assert r.json()["start_time"].endswith("Z")
+E       AssertionError: assert False
+E        +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4B96B0&gt;('Z')
+E        +    where &lt;built-in method endswith of str object at 0x000001C6EF4B96B0&gt; = '2026-10-18T09:00:00+03:00'.endswith
+
+tests\acceptance\test_us2_booking.py:32: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_overlapping_booking_refused" time="0.924" /><testcase classname="tests.acceptance.test_us2_booking" name="test_any_overlap_shape_refused[start0-end0]" time="0.867" /><testcase classname="tests.acceptance.test_us2_booking" name="test_any_overlap_shape_refused[start1-end1]" time="0.859" /><testcase classname="tests.acceptance.test_us2_booking" name="test_any_overlap_shape_refused[start2-end2]" time="0.856" /><testcase classname="tests.acceptance.test_us2_booking" name="test_back_to_back_bookings_allowed" time="0.877" /><testcase classname="tests.acceptance.test_us2_booking" name="test_same_slot_in_another_room_allowed" time="0.604" /><testcase classname="tests.acceptance.test_us2_booking" name="test_end_not_after_start_refused" time="0.584" /><testcase classname="tests.acceptance.test_us2_booking" name="test_start_in_past_refused" time="0.594" /><testcase classname="tests.acceptance.test_us2_booking" name="test_horizon_90_days" time="0.602"><failure message="assert 201 == 422&#10; +  where 201 = &lt;Response [201 Created]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF3B5280&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MSIsImlhdCI6MTc5MjE1MjMwNiwiZXhwIjoxNzkyMTU1OTA2fQ.kFIVAIYNgRcP8IeYMIGzWnpICk2WUEpqK5gnA2p8ceg'}
+room = {'id': 18, 'name': 'room_e46c914b', 'capacity': 8, 'location': None, ...}
+
+    def test_horizon_90_days(client, user, room):
+        assert book(client, user, room["id"], helsinki(89, 10), helsinki(89, 11)).status_code == 201
+        r = book(client, user, room["id"], helsinki(91, 10), helsinki(91, 11))
+&gt;       assert r.status_code == 422
+E       assert 201 == 422
+E        +  where 201 = &lt;Response [201 Created]&gt;.status_code
+
+tests\acceptance\test_us2_booking.py:81: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_within_opening_hours_and_four_hours_accepted" time="0.606" /><testcase classname="tests.acceptance.test_us2_booking" name="test_booking_rules_refused_with_message[start0-end0-08:00]" time="0.586"><failure message="assert 201 == 422&#10; +  where 201 = &lt;Response [201 Created]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF35EE40&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MyIsImlhdCI6MTc5MjE1MjMwNywiZXhwIjoxNzkyMTU1OTA3fQ.bPkMERojdGT-IHWJldUb2iaLU7YS0mj9GGMMoaYHNZI'}
+room = {'id': 20, 'name': 'room_ba9d87df', 'capacity': 8, 'location': None, ...}
+start = (1, 7, 30), end = (1, 8, 30), rule = '08:00'
+
+    @pytest.mark.parametrize(
+        "start, end, rule",
+        [
+            ((1, 7, 30), (1, 8, 30), "08:00"),
+            ((1, 17, 0), (1, 18, 30), "08:00"),
+            ((1, 9, 0), (1, 13, 30), "4 hours"),
+            ((1, 17, 0), (2, 9, 0), "same day"),
+        ],
+    )
+    def test_booking_rules_refused_with_message(client, user, room, start, end, rule):
+        r = book(client, user, room["id"], helsinki(*start), helsinki(*end))
+&gt;       assert r.status_code == 422
+E       assert 201 == 422
+E        +  where 201 = &lt;Response [201 Created]&gt;.status_code
+
+tests\acceptance\test_us2_booking.py:103: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_booking_rules_refused_with_message[start1-end1-08:00]" time="0.586"><failure message="assert 201 == 422&#10; +  where 201 = &lt;Response [201 Created]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF3B6AB0&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NCIsImlhdCI6MTc5MjE1MjMwOCwiZXhwIjoxNzkyMTU1OTA4fQ.PC_sXdGEQ2GvrtKaVurX0gDa6c5JiW31Veo49ti1Kiw'}
+room = {'id': 21, 'name': 'room_40deb434', 'capacity': 8, 'location': None, ...}
+start = (1, 17, 0), end = (1, 18, 30), rule = '08:00'
+
+    @pytest.mark.parametrize(
+        "start, end, rule",
+        [
+            ((1, 7, 30), (1, 8, 30), "08:00"),
+            ((1, 17, 0), (1, 18, 30), "08:00"),
+            ((1, 9, 0), (1, 13, 30), "4 hours"),
+            ((1, 17, 0), (2, 9, 0), "same day"),
+        ],
+    )
+    def test_booking_rules_refused_with_message(client, user, room, start, end, rule):
+        r = book(client, user, room["id"], helsinki(*start), helsinki(*end))
+&gt;       assert r.status_code == 422
+E       assert 201 == 422
+E        +  where 201 = &lt;Response [201 Created]&gt;.status_code
+
+tests\acceptance\test_us2_booking.py:103: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_booking_rules_refused_with_message[start2-end2-4 hours]" time="0.584"><failure message="assert 201 == 422&#10; +  where 201 = &lt;Response [201 Created]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF44DE20&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NSIsImlhdCI6MTc5MjE1MjMwOCwiZXhwIjoxNzkyMTU1OTA4fQ.fIzunw6aPP5q_fv0EULiicXBbmCyDmUJIDZIGUQYc5E'}
+room = {'id': 22, 'name': 'room_310ed780', 'capacity': 8, 'location': None, ...}
+start = (1, 9, 0), end = (1, 13, 30), rule = '4 hours'
+
+    @pytest.mark.parametrize(
+        "start, end, rule",
+        [
+            ((1, 7, 30), (1, 8, 30), "08:00"),
+            ((1, 17, 0), (1, 18, 30), "08:00"),
+            ((1, 9, 0), (1, 13, 30), "4 hours"),
+            ((1, 17, 0), (2, 9, 0), "same day"),
+        ],
+    )
+    def test_booking_rules_refused_with_message(client, user, room, start, end, rule):
+        r = book(client, user, room["id"], helsinki(*start), helsinki(*end))
+&gt;       assert r.status_code == 422
+E       assert 201 == 422
+E        +  where 201 = &lt;Response [201 Created]&gt;.status_code
+
+tests\acceptance\test_us2_booking.py:103: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_booking_rules_refused_with_message[start3-end3-same day]" time="0.590"><failure message="AssertionError: assert 'same day' in 'A booking may be at most 8 hours long'">client = &lt;httpx.Client object at 0x000001C6EF40CB00&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NiIsImlhdCI6MTc5MjE1MjMwOSwiZXhwIjoxNzkyMTU1OTA5fQ.YGCPCUhqxZOhWXdTrc1BrOowcw-eQy1Xv8E6suivnzQ'}
+room = {'id': 23, 'name': 'room_f5c40c65', 'capacity': 8, 'location': None, ...}
+start = (1, 17, 0), end = (2, 9, 0), rule = 'same day'
+
+    @pytest.mark.parametrize(
+        "start, end, rule",
+        [
+            ((1, 7, 30), (1, 8, 30), "08:00"),
+            ((1, 17, 0), (1, 18, 30), "08:00"),
+            ((1, 9, 0), (1, 13, 30), "4 hours"),
+            ((1, 17, 0), (2, 9, 0), "same day"),
+        ],
+    )
+    def test_booking_rules_refused_with_message(client, user, room, start, end, rule):
+        r = book(client, user, room["id"], helsinki(*start), helsinki(*end))
+        assert r.status_code == 422
+&gt;       assert rule in r.json()["detail"]
+E       AssertionError: assert 'same day' in 'A booking may be at most 8 hours long'
+
+tests\acceptance\test_us2_booking.py:104: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_time_without_offset_refused" time="0.598"><failure message="assert 201 == 422&#10; +  where 201 = &lt;Response [201 Created]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF4B1B80&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NyIsImlhdCI6MTc5MjE1MjMxMCwiZXhwIjoxNzkyMTU1OTEwfQ.1m0xWzjB7NkDhxipnNpC1h3dgsshyXFReYp0uQm82pc'}
+room = {'id': 24, 'name': 'room_f8cc2844', 'capacity': 8, 'location': None, ...}
+
+    def test_time_without_offset_refused(client, user, room):
+        day = helsinki_date(1).isoformat()
+        r = book(client, user, room["id"], f"{day}T10:00:00", f"{day}T11:00:00")
+&gt;       assert r.status_code == 422
+E       assert 201 == 422
+E        +  where 201 = &lt;Response [201 Created]&gt;.status_code
+
+tests\acceptance\test_us2_booking.py:113: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us2_booking" name="test_missing_room_refused" time="0.849" /><testcase classname="tests.acceptance.test_us2_booking" name="test_inactive_room_refused" time="0.578" /><testcase classname="tests.acceptance.test_us2_booking" name="test_far_future_date_gives_422_not_500" time="0.584" /><testcase classname="tests.acceptance.test_us2_booking" name="test_huge_room_id_gives_422" time="0.422" /><testcase classname="tests.acceptance.test_us2_booking" name="test_booking_needs_token" time="0.289" /><testcase classname="tests.acceptance.test_us2_booking" name="test_booking_belongs_to_the_booker" time="0.633"><failure message="AssertionError: 2026-10-16T15:05:13+03:00&#10;assert False&#10; +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4D5480&gt;('Z')&#10; +    where &lt;built-in method endswith of str object at 0x000001C6EF4D5480&gt; = '2026-10-16T15:05:13+03:00'.endswith">client = &lt;httpx.Client object at 0x000001C6EF4C5700&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4MiIsImlhdCI6MTc5MjE1MjMxMywiZXhwIjoxNzkyMTU1OTEzfQ.bhp3KKnw71bEYQzBKwFub2Ch28ITBRMqCLwkFOlEmmE'}
+room = {'id': 28, 'name': 'room_6585b2b1', 'capacity': 8, 'location': None, ...}
+
+    def test_booking_belongs_to_the_booker(client, user, room):
+        me = client.get("/users/me", headers=user).json()
+        r = book(client, user, room["id"], helsinki(1, 10), helsinki(1, 11))
+        assert r.json()["user_id"] == me["id"]
+&gt;       assert parse_z(r.json()["created_at"]) &lt;= datetime.now(timezone.utc) + timedelta(seconds=5)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\acceptance\test_us2_booking.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+value = '2026-10-16T15:05:13+03:00'
+
+    def parse_z(value: str) -&gt; datetime:
+&gt;       assert value.endswith("Z"), value
+E       AssertionError: 2026-10-16T15:05:13+03:00
+E       assert False
+E        +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4D5480&gt;('Z')
+E        +    where &lt;built-in method endswith of str object at 0x000001C6EF4D5480&gt; = '2026-10-16T15:05:13+03:00'.endswith
+
+tests\acceptance\test_us2_booking.py:10: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_list_shows_only_active_rooms_by_name" time="0.000"><skipped type="pytest.skip" message="uses fixed room names, which could collide on a shared server">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us3_rooms_availability.py:26: uses fixed room names, which could collide on a shared server</skipped></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_list_includes_new_room_with_its_details" time="0.591" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_get_active_room" time="0.579" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_inactive_room_hidden_from_users" time="0.574" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_missing_room_404" time="0.691" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_rooms_need_token" time="0.173" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_huge_room_id_gives_422" time="0.452" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_empty_day_is_free_during_opening_hours" time="0.575"><failure message="KeyError: 'date'">client = &lt;httpx.Client object at 0x000001C6EF396E70&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4OCIsImlhdCI6MTc5MjE1MjMxNywiZXhwIjoxNzkyMTU1OTE3fQ.jWg2gcUXJfHRFDm98rBcZ9Vd5a0VlPUsZQ3tJMWqPPw'}
+room = {'id': 32, 'name': 'room_55ab9030', 'capacity': 8, 'location': None, ...}
+
+    def test_empty_day_is_free_during_opening_hours(client, user, room):
+        r = availability(client, user, room["id"], 2)
+        assert r.status_code == 200, r.text
+        body = r.json()
+&gt;       assert body["date"] == helsinki_date(2).isoformat()
+               ^^^^^^^^^^^^
+E       KeyError: 'date'
+
+tests\acceptance\test_us3_rooms_availability.py:81: KeyError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_one_booking_splits_the_free_time" time="0.581"><failure message="AssertionError: assert [] == [('2026-10-18...8T08:00:00Z')]&#10;  &#10;  Right contains one more item: ('2026-10-18T07:00:00Z', '2026-10-18T08:00:00Z')&#10;  Use -v to get more diff">client = &lt;httpx.Client object at 0x000001C6EF39DD90&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4OSIsImlhdCI6MTc5MjE1MjMxNywiZXhwIjoxNzkyMTU1OTE3fQ.-xsAhzs-RwBhBx2SSlV_vHQL8bg0EVgSjE_YlX6ZhXQ'}
+room = {'id': 33, 'name': 'room_7df3c8aa', 'capacity': 8, 'location': None, ...}
+
+    def test_one_booking_splits_the_free_time(client, user, room):
+        assert book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).status_code == 201
+        body = availability(client, user, room["id"], 2).json()
+&gt;       assert slots(body["booked"]) == [(utc_z(2, 10), utc_z(2, 11))]
+E       AssertionError: assert [] == [('2026-10-18...8T08:00:00Z')]
+E         
+E         Right contains one more item: ('2026-10-18T07:00:00Z', '2026-10-18T08:00:00Z')
+E         Use -v to get more diff
+
+tests\acceptance\test_us3_rooms_availability.py:91: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_two_bookings_give_three_free_intervals" time="0.874"><failure message="AssertionError: assert [] == [('2026-10-18...8T11:00:00Z')]&#10;  &#10;  Right contains 2 more items, first extra item: ('2026-10-18T07:00:00Z', '2026-10-18T08:00:00Z')&#10;  Use -v to get more diff">client = &lt;httpx.Client object at 0x000001C6EF386360&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MCIsImlhdCI6MTc5MjE1MjMxOCwiZXhwIjoxNzkyMTU1OTE4fQ.seSw3yTBtQY9NX8u3mymkP0wdQq2-Qw0ok27oMXmYgo'}
+other_user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MSIsImlhdCI6MTc5MjE1MjMxOCwiZXhwIjoxNzkyMTU1OTE4fQ.GxjAEW6OBQznZDslcBI78WRNiwqL0kJucVJjWkyF8P4'}
+room = {'id': 34, 'name': 'room_a23fdae2', 'capacity': 8, 'location': None, ...}
+
+    def test_two_bookings_give_three_free_intervals(client, user, other_user, room):
+        assert book(client, user, room["id"], helsinki(2, 13), helsinki(2, 14)).status_code == 201
+        assert book(client, other_user, room["id"], helsinki(2, 10), helsinki(2, 11)).status_code == 201
+        body = availability(client, user, room["id"], 2).json()
+&gt;       assert slots(body["booked"]) == [(utc_z(2, 10), utc_z(2, 11)), (utc_z(2, 13), utc_z(2, 14))]
+E       AssertionError: assert [] == [('2026-10-18...8T11:00:00Z')]
+E         
+E         Right contains 2 more items, first extra item: ('2026-10-18T07:00:00Z', '2026-10-18T08:00:00Z')
+E         Use -v to get more diff
+
+tests\acceptance\test_us3_rooms_availability.py:99: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_booking_at_opening_and_closing_leaves_no_edge_gaps" time="0.599"><failure message="AssertionError: assert [('2026-10-16...00:00+03:00')] == [('2026-10-18...8T14:00:00Z')]&#10;  &#10;  At index 0 diff: ('2026-10-16T07:00:00+03:00', '2026-10-16T20:00:00+03:00') != ('2026-10-18T06:00:00Z', '2026-10-18T14:00:00Z')&#10;  Use -v to get more diff">client = &lt;httpx.Client object at 0x000001C6EF44E360&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MiIsImlhdCI6MTc5MjE1MjMxOSwiZXhwIjoxNzkyMTU1OTE5fQ.4YQCpQc4W5S6kIxpTgvUNSZMaoWp0M09WnrE_ezuMSk'}
+room = {'id': 35, 'name': 'room_5950673c', 'capacity': 8, 'location': None, ...}
+
+    def test_booking_at_opening_and_closing_leaves_no_edge_gaps(client, user, room):
+        assert book(client, user, room["id"], helsinki(2, 8), helsinki(2, 9)).status_code == 201
+        assert book(client, user, room["id"], helsinki(2, 17), helsinki(2, 18)).status_code == 201
+        body = availability(client, user, room["id"], 2).json()
+&gt;       assert slots(body["free"]) == [(utc_z(2, 9), utc_z(2, 17))]
+E       AssertionError: assert [('2026-10-16...00:00+03:00')] == [('2026-10-18...8T14:00:00Z')]
+E         
+E         At index 0 diff: ('2026-10-16T07:00:00+03:00', '2026-10-16T20:00:00+03:00') != ('2026-10-18T06:00:00Z', '2026-10-18T14:00:00Z')
+E         Use -v to get more diff
+
+tests\acceptance\test_us3_rooms_availability.py:111: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_other_days_bookings_not_shown" time="0.576" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_bad_or_missing_date_gives_422[params0]" time="0.576"><failure message="assert 200 == 422&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF397020&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NCIsImlhdCI6MTc5MjE1MjMyMCwiZXhwIjoxNzkyMTU1OTIwfQ.WrMTe_sSPlVCh9J6fUlUX4r_WphzfEhRsjwQDTC_GpM'}
+room = {'id': 37, 'name': 'room_361ae9be', 'capacity': 8, 'location': None, ...}
+params = {}
+
+    @pytest.mark.parametrize("params", [{}, {"date": "not-a-date"}, {"date": "2026-13-01"}])
+    def test_bad_or_missing_date_gives_422(client, user, room, params):
+        r = client.get(f"/rooms/{room['id']}/availability", params=params, headers=user)
+&gt;       assert r.status_code == 422
+E       assert 200 == 422
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\acceptance\test_us3_rooms_availability.py:122: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_bad_or_missing_date_gives_422[params1]" time="0.678"><failure message="assert 200 == 422&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF3B7D40&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NSIsImlhdCI6MTc5MjE1MjMyMSwiZXhwIjoxNzkyMTU1OTIxfQ.6dmweeCH8dY6ryvaoivnNyMgddN-LwBDbNsK2zdct3E'}
+room = {'id': 38, 'name': 'room_244b6e47', 'capacity': 8, 'location': None, ...}
+params = {'date': 'not-a-date'}
+
+    @pytest.mark.parametrize("params", [{}, {"date": "not-a-date"}, {"date": "2026-13-01"}])
+    def test_bad_or_missing_date_gives_422(client, user, room, params):
+        r = client.get(f"/rooms/{room['id']}/availability", params=params, headers=user)
+&gt;       assert r.status_code == 422
+E       assert 200 == 422
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\acceptance\test_us3_rooms_availability.py:122: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_bad_or_missing_date_gives_422[params2]" time="0.580"><failure message="assert 200 == 422&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF4B38C0&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5NiIsImlhdCI6MTc5MjE1MjMyMSwiZXhwIjoxNzkyMTU1OTIxfQ.rivHWzFm5tdr5whcvZXdbAf44kPFX8dvXsws3SpOMDo'}
+room = {'id': 39, 'name': 'room_8c3d9987', 'capacity': 8, 'location': None, ...}
+params = {'date': '2026-13-01'}
+
+    @pytest.mark.parametrize("params", [{}, {"date": "not-a-date"}, {"date": "2026-13-01"}])
+    def test_bad_or_missing_date_gives_422(client, user, room, params):
+        r = client.get(f"/rooms/{room['id']}/availability", params=params, headers=user)
+&gt;       assert r.status_code == 422
+E       assert 200 == 422
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\acceptance\test_us3_rooms_availability.py:122: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_availability_of_missing_room_404" time="0.423" /><testcase classname="tests.acceptance.test_us3_rooms_availability" name="test_availability_of_inactive_room_404" time="0.567" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_list_shows_only_my_bookings_oldest_first" time="0.901"><failure message="AssertionError: {&quot;detail&quot;:[{&quot;type&quot;:&quot;int_parsing&quot;,&quot;loc&quot;:[&quot;path&quot;,&quot;booking_id&quot;],&quot;msg&quot;:&quot;Input should be a valid integer, unable to parse string as an integer&quot;,&quot;input&quot;:&quot;me&quot;}]}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF44C830&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5OSIsImlhdCI6MTc5MjE1MjMyMywiZXhwIjoxNzkyMTU1OTIzfQ.YENgkAwo_Yi-CPDmwzpGZdETOqsJM5Gsrzug-2kEz04'}
+other_user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAiLCJpYXQiOjE3OTIxNTIzMjMsImV4cCI6MTc5MjE1NTkyM30.NUijTVDlSdcMh_hQwqd5-iJeXi-vZCGQKlMK-7hScFg'}
+room = {'id': 41, 'name': 'room_b6639ebc', 'capacity': 8, 'location': None, ...}
+
+    def test_list_shows_only_my_bookings_oldest_first(client, user, other_user, room):
+        later = book(client, user, room["id"], helsinki(3, 10), helsinki(3, 11)).json()
+        earlier = book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).json()
+        book(client, other_user, room["id"], helsinki(2, 12), helsinki(2, 13))
+&gt;       assert [b["id"] for b in my_bookings(client, user)] == [earlier["id"], later["id"]]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\acceptance\test_us4_my_bookings.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+client = &lt;httpx.Client object at 0x000001C6EF44C830&gt;
+headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5OSIsImlhdCI6MTc5MjE1MjMyMywiZXhwIjoxNzkyMTU1OTIzfQ.YENgkAwo_Yi-CPDmwzpGZdETOqsJM5Gsrzug-2kEz04'}
+
+    def my_bookings(client, headers):
+        r = client.get("/bookings/me", headers=headers)
+&gt;       assert r.status_code == 200, r.text
+E       AssertionError: {"detail":[{"type":"int_parsing","loc":["path","booking_id"],"msg":"Input should be a valid integer, unable to parse string as an integer","input":"me"}]}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+tests\acceptance\test_us4_my_bookings.py:13: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_list_is_empty_for_new_user" time="0.436"><failure message="AssertionError: {&quot;detail&quot;:[{&quot;type&quot;:&quot;int_parsing&quot;,&quot;loc&quot;:[&quot;path&quot;,&quot;booking_id&quot;],&quot;msg&quot;:&quot;Input should be a valid integer, unable to parse string as an integer&quot;,&quot;input&quot;:&quot;me&quot;}]}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF4C7E30&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDEiLCJpYXQiOjE3OTIxNTIzMjQsImV4cCI6MTc5MjE1NTkyNH0.bWuGR87m1aHS3E2FFMfexxDyKDGgZ5rinQ3RJ494Guo'}
+
+    def test_list_is_empty_for_new_user(client, user):
+&gt;       assert my_bookings(client, user) == []
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\acceptance\test_us4_my_bookings.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+client = &lt;httpx.Client object at 0x000001C6EF4C7E30&gt;
+headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDEiLCJpYXQiOjE3OTIxNTIzMjQsImV4cCI6MTc5MjE1NTkyNH0.bWuGR87m1aHS3E2FFMfexxDyKDGgZ5rinQ3RJ494Guo'}
+
+    def my_bookings(client, headers):
+        r = client.get("/bookings/me", headers=headers)
+&gt;       assert r.status_code == 200, r.text
+E       AssertionError: {"detail":[{"type":"int_parsing","loc":["path","booking_id"],"msg":"Input should be a valid integer, unable to parse string as an integer","input":"me"}]}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+tests\acceptance\test_us4_my_bookings.py:13: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_list_leaves_out_ended_bookings" time="0.000"><skipped type="pytest.skip" message="reads or writes the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us4_my_bookings.py:31: reads or writes the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_list_needs_token" time="0.150" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_own_booking_frees_the_slot" time="0.874"><failure message="AssertionError: {&quot;detail&quot;:[{&quot;type&quot;:&quot;int_parsing&quot;,&quot;loc&quot;:[&quot;path&quot;,&quot;booking_id&quot;],&quot;msg&quot;:&quot;Input should be a valid integer, unable to parse string as an integer&quot;,&quot;input&quot;:&quot;me&quot;}]}&#10;assert 422 == 200&#10; +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF4C4CB0&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDIiLCJpYXQiOjE3OTIxNTIzMjQsImV4cCI6MTc5MjE1NTkyNH0.yvYrFdhLRy93ee3O-y36GUznlxNqmb_VefafuQnL28c'}
+other_user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDMiLCJpYXQiOjE3OTIxNTIzMjUsImV4cCI6MTc5MjE1NTkyNX0.4mV3U_uNd6qW5cU80BVYbyofUvCrpE5wQgpP__THtoc'}
+room = {'id': 42, 'name': 'room_35058904', 'capacity': 8, 'location': None, ...}
+
+    def test_cancel_own_booking_frees_the_slot(client, user, other_user, room):
+        booking = book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).json()
+        assert client.delete(f"/bookings/{booking['id']}", headers=user).status_code == 204
+&gt;       assert my_bookings(client, user) == []
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\acceptance\test_us4_my_bookings.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+client = &lt;httpx.Client object at 0x000001C6EF4C4CB0&gt;
+headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDIiLCJpYXQiOjE3OTIxNTIzMjQsImV4cCI6MTc5MjE1NTkyNH0.yvYrFdhLRy93ee3O-y36GUznlxNqmb_VefafuQnL28c'}
+
+    def my_bookings(client, headers):
+        r = client.get("/bookings/me", headers=headers)
+&gt;       assert r.status_code == 200, r.text
+E       AssertionError: {"detail":[{"type":"int_parsing","loc":["path","booking_id"],"msg":"Input should be a valid integer, unable to parse string as an integer","input":"me"}]}
+E       assert 422 == 200
+E        +  where 422 = &lt;Response [422 Unprocessable Entity]&gt;.status_code
+
+tests\acceptance\test_us4_my_bookings.py:13: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancelled_booking_is_kept_with_who_and_when" time="0.000"><skipped type="pytest.skip" message="reads or writes the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us4_my_bookings.py:62: reads or writes the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_twice_refused" time="0.838" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_ended_booking_refused_for_user" time="0.000"><skipped type="pytest.skip" message="reads or writes the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us4_my_bookings.py:80: reads or writes the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_someone_elses_booking_forbidden" time="0.862"><failure message="assert 404 == 403&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF4C7920&gt;
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDUiLCJpYXQiOjE3OTIxNTIzMjYsImV4cCI6MTc5MjE1NTkyNn0.Xwnn9b6pmisFjMvnjmvB8d6ZLr_V2-Pt0zbsVOhNgjU'}
+other_user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDYiLCJpYXQiOjE3OTIxNTIzMjYsImV4cCI6MTc5MjE1NTkyNn0.XyW0a_x5R_YoaHsznRzj1Q57va0lrTpjfhRC62kx8f4'}
+room = {'id': 44, 'name': 'room_959775c0', 'capacity': 8, 'location': None, ...}
+
+    def test_cancel_someone_elses_booking_forbidden(client, user, other_user, room):
+        booking = book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).json()
+        r = client.delete(f"/bookings/{booking['id']}", headers=other_user)
+&gt;       assert r.status_code == 403
+E       assert 404 == 403
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests\acceptance\test_us4_my_bookings.py:97: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_missing_booking_404" time="0.420" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_huge_id_gives_422" time="0.423" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_cancel_needs_token" time="0.573" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_no_edit_endpoint[PUT]" time="0.585" /><testcase classname="tests.acceptance.test_us4_my_bookings" name="test_no_edit_endpoint[PATCH]" time="0.572" /><testcase classname="tests.acceptance.test_us5_admin" name="test_admin_creates_active_room" time="0.301"><failure message="AssertionError: assert False&#10; +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4F1D90&gt;('Z')&#10; +    where &lt;built-in method endswith of str object at 0x000001C6EF4F1D90&gt; = '2026-10-16T15:05:29+03:00'.endswith">client = &lt;httpx.Client object at 0x000001C6EF3975C0&gt;
+admin = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzkyMTUyMzI5LCJleHAiOjE3OTIxNTU5Mjl9.uhl4r8FH7kA10gvu1QDNihVNcI3zALa3gag1EUGAALk'}
+
+    def test_admin_creates_active_room(client, admin):
+        name = unique("Aurora")
+        r = create(client, admin, name=name, capacity=12, location="2nd floor", description="Screen and whiteboard")
+        assert r.status_code == 201, r.text
+        body = r.json()
+        assert (body["name"], body["capacity"], body["location"], body["is_active"]) == (name, 12, "2nd floor", True)
+&gt;       assert body["created_at"].endswith("Z")
+E       AssertionError: assert False
+E        +  where False = &lt;built-in method endswith of str object at 0x000001C6EF4F1D90&gt;('Z')
+E        +    where &lt;built-in method endswith of str object at 0x000001C6EF4F1D90&gt; = '2026-10-16T15:05:29+03:00'.endswith
+
+tests\acceptance\test_us5_admin.py:26: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_room_fields_refused[capacity-0]" time="0.298" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_room_fields_refused[capacity-10001]" time="0.279" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_room_fields_refused[name-]" time="0.279" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_room_fields_refused[name-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]" time="0.284" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_room_fields_refused[location-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]" time="0.281" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_room_fields_refused[description-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]" time="0.282" /><testcase classname="tests.acceptance.test_us5_admin" name="test_duplicate_name_refused_on_create" time="0.300" /><testcase classname="tests.acceptance.test_us5_admin" name="test_duplicate_name_refused_on_rename" time="0.309" /><testcase classname="tests.acceptance.test_us5_admin" name="test_admin_edits_room" time="0.317" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_edits_refused[body0]" time="0.303" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_edits_refused[body1]" time="0.298" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_edits_refused[body2]" time="0.319" /><testcase classname="tests.acceptance.test_us5_admin" name="test_invalid_edits_refused[body3]" time="0.293" /><testcase classname="tests.acceptance.test_us5_admin" name="test_edit_missing_room_404" time="0.283" /><testcase classname="tests.acceptance.test_us5_admin" name="test_edit_huge_room_id_gives_422" time="0.282" /><testcase classname="tests.acceptance.test_us5_admin" name="test_deactivation_refused_while_future_booking_exists" time="0.604"><failure message="assert 200 == 409&#10; +  where 200 = &lt;Response [200 OK]&gt;.status_code">client = &lt;httpx.Client object at 0x000001C6EF44E270&gt;
+admin = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzkyMTUyMzM0LCJleHAiOjE3OTIxNTU5MzR9.XkSL5w_JpHLhOdZP-cD9M4XS2WMaoO5mpd2qMSzeh8k'}
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTIiLCJpYXQiOjE3OTIxNTIzMzQsImV4cCI6MTc5MjE1NTkzNH0.-KE29sAl21iGX-Z4kIM9zYau25jP7RgZ9DmTH5ys30E'}
+
+    def test_deactivation_refused_while_future_booking_exists(client, admin, user):
+        room = create(client, admin).json()
+        booking = book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).json()
+        r = client.patch(f"/rooms/{room['id']}", json={"is_active": False}, headers=admin)
+&gt;       assert r.status_code == 409
+E       assert 200 == 409
+E        +  where 200 = &lt;Response [200 OK]&gt;.status_code
+
+tests\acceptance\test_us5_admin.py:91: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us5_admin" name="test_deactivated_room_hidden_and_unbookable_then_reactivated" time="0.622" /><testcase classname="tests.acceptance.test_us5_admin" name="test_ended_bookings_do_not_block_deactivation" time="0.000"><skipped type="pytest.skip" message="reads or writes the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us5_admin.py:109: reads or writes the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_us5_admin" name="test_admin_cancels_another_users_booking" time="0.763"><failure message="AssertionError: assert {'detail': [{...nput': 'me'}]} == []&#10;  &#10;  Use -v to get more diff">client = &lt;httpx.Client object at 0x000001C6EF4EF2F0&gt;
+admin = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzkyMTUyMzM1LCJleHAiOjE3OTIxNTU5MzV9.NYbWS8guXIg8Gs3Qqu-VT99GtErUCglcVw-UsM831AI'}
+user = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTQiLCJpYXQiOjE3OTIxNTIzMzYsImV4cCI6MTc5MjE1NTkzNn0.MOjsTBusGBqSulDqGX-9wbU5QHNc7CzbirxXHTVA990'}
+
+    def test_admin_cancels_another_users_booking(client, admin, user):
+        room = create(client, admin).json()
+        booking = book(client, user, room["id"], helsinki(2, 10), helsinki(2, 11)).json()
+        assert client.delete(f"/bookings/{booking['id']}", headers=admin).status_code == 204
+&gt;       assert client.get("/bookings/me", headers=user).json() == []
+E       AssertionError: assert {'detail': [{...nput': 'me'}]} == []
+E         
+E         Use -v to get more diff
+
+tests\acceptance\test_us5_admin.py:125: AssertionError</failure></testcase><testcase classname="tests.acceptance.test_us5_admin" name="test_admin_cancellation_records_the_admin" time="0.000"><skipped type="pytest.skip" message="reads or writes the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us5_admin.py:128: reads or writes the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_us5_admin" name="test_admin_cancels_ended_booking" time="0.000"><skipped type="pytest.skip" message="reads or writes the test database directly">C:\Users\lehvo\RoomAPI\sdd\tests\acceptance\test_us5_admin.py:137: reads or writes the test database directly</skipped></testcase><testcase classname="tests.acceptance.test_us5_admin" name="test_regular_user_cannot_create_room" time="0.423" /><testcase classname="tests.acceptance.test_us5_admin" name="test_regular_user_cannot_edit_room" time="0.576" /><testcase classname="tests.acceptance.test_us5_admin" name="test_room_management_needs_token" time="0.154" /></testsuite></testsuites>
