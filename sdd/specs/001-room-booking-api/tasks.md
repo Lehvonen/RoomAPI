@@ -135,7 +135,7 @@ description: "Task list for the Room Booking API"
 
 ### Tests for User Story 3 (write first, must fail) ⚠️
 
-- [ ] T021 [P] [US3] Acceptance tests in `tests/acceptance/test_us3_rooms_availability.py`:
+- [X] T021 [P] [US3] Acceptance tests in `tests/acceptance/test_us3_rooms_availability.py`:
   - User Story 3, scenarios 1–2
   - FR-007: an inactive room is hidden from list and get (404)
   - FR-010: a day with 10:00–11:00 booked gives free 08:00–10:00 and 11:00–18:00, in UTC
@@ -143,8 +143,8 @@ description: "Task list for the Room Booking API"
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement `GET /rooms` (active, ordered by name) and `GET /rooms/{room_id}` (404 if missing, or inactive for non-admins) in `app/routers/rooms.py`
-- [ ] T023 [US3] Implement `GET /rooms/{room_id}/availability?date=` in `app/routers/rooms.py`, using `timerules.opening_window`: booked intervals clipped to the window, and free intervals as the gaps
+- [X] T022 [US3] Implement `GET /rooms` (active, ordered by name) and `GET /rooms/{room_id}` (404 if missing, or inactive for non-admins) in `app/routers/rooms.py`
+- [X] T023 [US3] Implement `GET /rooms/{room_id}/availability?date=` in `app/routers/rooms.py`, using `timerules.opening_window`: booked intervals clipped to the window, and free intervals as the gaps
 
 **Checkpoint**: US3 works on its own.
 
@@ -158,7 +158,7 @@ description: "Task list for the Room Booking API"
 
 ### Tests for User Story 4 (write first, must fail) ⚠️
 
-- [ ] T024 [P] [US4] Acceptance tests in `tests/acceptance/test_us4_my_bookings.py`:
+- [X] T024 [P] [US4] Acceptance tests in `tests/acceptance/test_us4_my_bookings.py`:
   - User Story 4, scenarios 1–3
   - FR-014: only your own, only active and not ended, oldest first
   - FR-015: cancel gives 204; then status `cancelled` with `cancelled_at` and `cancelled_by` set; cancelling again gives 409; another user's booking gives 403; a missing booking gives 404
@@ -166,8 +166,8 @@ description: "Task list for the Room Booking API"
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] Implement `GET /bookings/me` in `app/routers/bookings.py`
-- [ ] T026 [US4] Implement `DELETE /bookings/{booking_id}` in `app/routers/bookings.py`: owner or admin (else 403); 409 if already cancelled, or if ended for a non-admin; set `cancelled_at` and `cancelled_by`
+- [X] T025 [US4] Implement `GET /bookings/me` in `app/routers/bookings.py`
+- [X] T026 [US4] Implement `DELETE /bookings/{booking_id}` in `app/routers/bookings.py`: owner or admin (else 403); 409 if already cancelled, or if ended for a non-admin; set `cancelled_at` and `cancelled_by`
 
 **Checkpoint**: US1–US4 work on their own.
 
