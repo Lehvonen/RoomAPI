@@ -104,19 +104,19 @@ description: "Task list for the Room Booking API"
 
 ### Tests for User Story 2 (write first, must fail) ⚠️
 
-- [ ] T017 [P] [US2] Acceptance tests in `tests/acceptance/test_us2_booking.py`:
+- [X] T017 [P] [US2] Acceptance tests in `tests/acceptance/test_us2_booking.py`:
   - User Story 2, scenarios 1–4
   - FR-011: past start, and a start 91 days ahead, refused
   - FR-012: 08:00–12:00 accepted; 07:30–08:30, 17:00–18:30, 09:00–13:30 and 17:00 to the next day's 09:00 refused
   - FR-013: overlap gives 409; back-to-back accepted; a cancelled booking doesn't block
   - FR-017: a time without an offset gives 422; a `+03:00` input is returned as UTC `Z`
   - booking an inactive or missing room gives 404
-- [ ] T018 [P] [US2] Concurrency test in `tests/acceptance/test_nfr_concurrency.py`: 20 threads request the same free slot and exactly 1 gets 201 (User Story 2 scenario 5, NFR-005, SC-002)
-- [ ] T019 [P] [US2] Unit tests for `app/timerules.py` in `tests/unit/test_timerules.py`: boundaries at exactly 08:00 and 18:00, exactly 4 h, the 90-day edge, the DST days 2026-10-25 and 2027-03-28, and the year-9999 overflow
+- [X] T018 [P] [US2] Concurrency test in `tests/acceptance/test_nfr_concurrency.py`: 20 threads request the same free slot and exactly 1 gets 201 (User Story 2 scenario 5, NFR-005, SC-002)
+- [X] T019 [P] [US2] Unit tests for `app/timerules.py` in `tests/unit/test_timerules.py`: boundaries at exactly 08:00 and 18:00, exactly 4 h, the 90-day edge, the DST days 2026-10-25 and 2027-03-28, and the year-9999 overflow
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement `POST /bookings` in `app/routers/bookings.py`:
+- [X] T020 [US2] Implement `POST /bookings` in `app/routers/bookings.py`:
   - validate with `timerules.check_booking_window`
   - in a `BEGIN IMMEDIATE` transaction: the room exists and is active (404), the overlap check `start < new.end AND new.start < end` on active bookings (409), then insert
   - return 201 with UTC times
