@@ -20,7 +20,7 @@ HTTP + JSON. Every endpoint except register, login and health needs `Authorizati
 
 | Method | Path | Who | Body / query | Success | Errors | Requirements |
 |---|---|---|---|---|---|---|
-| GET | `/health` | anyone | | 200 `{"status":"ok"}` | | |
+| GET | `/health` | anyone | | 200 `{"status":"ok"}` | | NFR-002 (the unauthenticated health check) |
 | POST | `/auth/register` | anyone | JSON `{username, password}` | 201 User | 409 name taken, 422 | FR-001, FR-002, FR-006 |
 | POST | `/auth/login` | anyone | **form** `username`, `password` | 200 `{access_token, token_type:"bearer"}` | 401 | FR-003, FR-004, NFR-009 |
 | GET | `/users/me` | user | | 200 User | 401 | FR-005 |

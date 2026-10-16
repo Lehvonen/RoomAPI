@@ -230,7 +230,7 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 ## Assumptions
 
 - The organisation works in one time zone, Europe/Helsinki. The system uses it only to check opening hours (FR-012); clients still send explicit offsets (FR-017) and get UTC back.
-- Login abuse is handled by slowing down attempts per username (NFR-009). Limits per network address are left to the network layer in front of the system, because a shared address would otherwise lock out everyone behind it.
+- Login abuse is handled by slowing down attempts per username (NFR-009). The delay holds back a client that sends one attempt at a time; parallel attempts each wait 2 seconds side by side, so the slow-down limits sequential guessing only. Limits per network address are left to the network layer in front of the system, because a shared address would otherwise lock out everyone behind it.
 - There is no logout. Clients end a session by discarding the token, which expires after 60 minutes.
 - Admins are few and trusted. There is no audit log beyond who cancelled a booking.
 - Rooms are never deleted, only deactivated, so past bookings keep a valid room.

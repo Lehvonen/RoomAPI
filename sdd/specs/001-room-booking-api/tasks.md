@@ -52,7 +52,7 @@ description: "Task list for the Room Booking API"
   - `AwareDatetime` inputs
   - a UTC serializer that outputs `Z`
   - the User, Room, Booking and Availability response models from contracts/api.md, with User never including the password or hash
-- [ ] T011 Implement the app factory in `app/main.py`: include the routers, `GET /health`, and an `OverflowError` and `ValueError` handler that returns 422. The app factory takes an optional database path for tests
+- [ ] T011 Implement the app factory in `app/main.py`: include the routers, and `GET /health`. Only the specific time-conversion errors become 422 (research R5): `timerules` turns `OverflowError` into a validation error, and there is no catch-all `ValueError` handler, so real bugs still surface. The app factory takes an optional database path for tests
 - [ ] T012 Implement the operator command `python -m app.cli create-admin <username> [--password]` in `app/cli.py`. It creates an admin, or promotes an existing user. The password must be 10–128 characters (FR-006, FR-002)
 - [ ] T013 Implement the test harness in `tests/conftest.py` (research R7):
   - a `client` fixture that is a `TestClient(create_app(tmp_db))` or, when `ROOMAPI_BASE_URL` is set, an `httpx.Client(base_url=...)`

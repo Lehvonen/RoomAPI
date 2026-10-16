@@ -39,7 +39,7 @@ All technical unknowns for [plan.md](plan.md) are resolved below. The constituti
 ## R6. Login slow-down (NFR-009)
 
 - **Decision**: a `failed_logins` table (username in lower case, time). Before checking a password, count that username's failures in the last 15 minutes. If there are 5 or more, wait 2 seconds before answering. A successful login deletes that username's failures. The delay length comes from `ROOMAPI_LOGIN_DELAY_SECONDS` (default 2) so it can be set explicitly in tests. There is no per-address counting and no lockout.
-- **Rationale**: slows guessing to under 30 attempts a minute per username, and can never lock anyone out (vibe's N1 and N1b).
+- **Rationale**: slows sequential guessing to under 30 attempts a minute per username, and can never lock anyone out (vibe's N1 and N1b). Parallel requests each wait side by side, so the limit holds for one-at-a-time guessing only (spec Assumptions).
 - **Alternatives considered**: lockout (rejected in clarification 1); in-memory counters (lost on restart, and can't be checked by black-box tests across processes).
 
 ## R7. Black-box acceptance tests with a configurable base URL
