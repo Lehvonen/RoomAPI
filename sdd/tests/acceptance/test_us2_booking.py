@@ -4,11 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from .. import conftest
 from ..conftest import book, create_room, helsinki, helsinki_date
-
-in_process_only = pytest.mark.skipif(conftest.external(), reason="sets up an inactive room directly")
-
 
 def parse_z(value: str) -> datetime:
     assert value.endswith("Z"), value
@@ -126,7 +122,6 @@ def test_missing_room_refused(client, user):
     assert "room" in r.json()["detail"].lower()  # not just "Not Found" from a missing route
 
 
-@in_process_only
 def test_inactive_room_refused(client, db_path, admin, user):
     closed = create_room(client, db_path, admin, active=False)
     r = book(client, user, closed["id"], helsinki(1, 10), helsinki(1, 11))
