@@ -19,6 +19,13 @@ def _utc_z(value: datetime) -> str:
 UTCDatetime = Annotated[datetime, PlainSerializer(_utc_z, return_type=str)]
 
 
+class UserCreate(BaseModel):
+    """Registration (FR-001, FR-002). Unknown fields such as is_admin are ignored (FR-006)."""
+
+    username: str = Field(min_length=3, max_length=50, pattern=r"^[A-Za-z0-9_.-]+$")
+    password: str = Field(min_length=10, max_length=128)
+
+
 class UserOut(BaseModel):
     """Never carries the password or its hash (FR-005, NFR-001)."""
 
