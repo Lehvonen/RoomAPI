@@ -157,4 +157,26 @@ Prompt (verbatim):
 /speckit-implement Only issue group A (#16): tasks T001–T013, project setup and foundation. Stop after T013 and mark only those tasks done.
 ```
 
+### 7. Implement, group B (`/speckit-implement`)
+
+| Field | Entry |
+|---|---|
+| Date | 2026-10-16 |
+| Who prompted | AI-drafted, edited and approved by Ivar Lehvonen before the run. His edit: "Stop after T016" became "Do not continue after T016". |
+| Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
+| Commit | `834d9fd` (failing tests), `5da5fa6` (implementation), `813c26b` (tasks marked done) |
+| Purpose | Build User Story 1, register and log in (issue #17, tasks T014–T016), test-first. |
+| Reasoning for the wording | Spells out the test-first order (write, run, commit while failing, then implement) so the history proves Constitution II. Adds the failed-login tidy-up from the #23 review, so the NFR-009 table is clean before the slow-down is built. |
+| Expected result | Failing US1 tests in their own commit, then registration, login and profile until they pass. |
+| What came back | 23 US1 tests, committed while failing (21 failed, 2 errors, because the endpoints didn't exist). After implementation, all 24 tests pass (23 plus health). Coverage rose from 40% to 74%; `routers/auth.py` is at 100%. |
+| Met expectations? | Yes. |
+| Issues (incorrect, incomplete or inefficient output) | None found. |
+| Refinement, why it was needed, and how the revised prompt improved the outcome | Ivar's wording edit only; no rerun needed. |
+
+Prompt (verbatim):
+
+```text
+/speckit-implement Only issue group B (#17): tasks T014–T016, User Story 1 (register and log in). Test-first: write T014's acceptance tests, run them and commit them while they fail, then implement T015 and T016 until they pass. Also lower-case and limit to 50 characters the username stored in failed_logins. Do not continue after T016 and mark only those tasks done.
+```
+
 <!-- Copy a block above for each new prompt. -->
