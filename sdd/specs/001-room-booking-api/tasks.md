@@ -259,14 +259,14 @@ One issue group per pull request (or a few small pull requests): A → B → C �
 
 ### Mapping to GitHub issues
 
-| Group | Tasks | Covers |
-|---|---|---|
-| A. Project setup and foundation | T001–T013 | constitution, NFR-002 base |
-| B. Accounts | T014–T016 | US1, FR-001–FR-006 |
-| C. Bookings | T017–T020 | US2, FR-011–FR-013, FR-017, NFR-005 |
-| D. Rooms, availability and my bookings | T021–T026 | US3, US4, FR-007, FR-010, FR-014–FR-016 |
-| E. Admin | T027–T028 | US5, FR-008, FR-009, NFR-003 |
-| F. NFRs, traceability, docs | T029–T037 | NFR-001, NFR-004, NFR-006, NFR-007, NFR-009, SC-001–SC-005 |
+| Group | Issue | Tasks | Covers |
+|---|---|---|---|
+| A. Project setup and foundation | #16 | T001–T013 | constitution, NFR-002 base |
+| B. Accounts | #17 | T014–T016 | US1, FR-001–FR-006 |
+| C. Bookings | #18 | T017–T020 | US2, FR-011–FR-013, FR-017, NFR-005 |
+| D. Rooms, availability and my bookings | #19 | T021–T026 | US3, US4, FR-007, FR-010, FR-014–FR-016 |
+| E. Admin | #20 | T027–T028 | US5, FR-008, FR-009, NFR-003 |
+| F. NFRs, traceability, docs | #21 | T029–T037 | NFR-001, NFR-004, NFR-006, NFR-007, NFR-009, SC-001–SC-005 |
 
 ---
 
