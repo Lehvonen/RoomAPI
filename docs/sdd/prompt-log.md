@@ -201,4 +201,26 @@ Prompt (verbatim):
 /speckit-implement Issue group C only (#18) : tasks T017–T020, User Story 2 (book a room). Write the acceptance tests (T017) first and the 20-request concurrency test (T018) and the time-rule unit tests (T019). Run them and commit them while they fail, then implement T020 until they pass. Booking-rule errors must come back as 422 with their message, never as 500. Do not continue after T020 and mark only those tasks done.
 ```
 
+### 9. Implement, group D (`/speckit-implement`)
+
+| Field | Entry |
+|---|---|
+| Date | 2026-10-16 |
+| Who prompted | AI-drafted, edited and approved by Ivar Lehvonen before the run. He held back the first draft and sent his own wording. |
+| Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
+| Commit | `d41b8f7` (failing tests), `87a547d` (rooms and availability), `33dba83` (my bookings and cancel), `8226628` (tasks marked done) |
+| Purpose | Build User Stories 3 and 4 (issue #19, tasks T021–T026), test-first. |
+| Reasoning for the wording | Names both stories and their test tasks first. Explicitly includes "a cancelled booking frees its slot", which moved here from US2 because this group builds cancelling. |
+| Expected result | Failing US3 and US4 tests committed first; then room list, room lookup, availability, my bookings and cancel until they pass. |
+| What came back | 31 acceptance tests, committed while all 31 failed. After implementation, all 100 tests pass. Coverage rose from 92% to 93%; all three routers are at 100%. The cancel test checks that the freed slot can be booked again and that availability shows only the new booking. |
+| Met expectations? | Yes. |
+| Issues (incorrect, incomplete or inefficient output) | Two availability 404 tests first passed only because the route didn't exist yet: FastAPI answers 404 for a missing route too. This repeated #18's finding. They now also check the message, so they failed until the endpoint existed. Ended bookings can't be created through the API (FR-011), so in-process tests insert them directly for the "ended" cases. |
+| Refinement, why it was needed, and how the revised prompt improved the outcome | Ivar's rewrite was used as is; no rerun needed. |
+
+Prompt (verbatim):
+
+```text
+/speckit-implement Only group D issue (#19): tasks T021–T026, User Story 3 (see rooms and availability) and User Story 4 (see and cancel my bookings). Start with writing the acceptance tests T021 and T024, including that a cancelled booking frees its slot. Run & commit while they fail, after that implement T022, T023, T025 and T026 until they pass. Do not continue after T026 and mark only those tasks done.
+```
+
 <!-- Copy a block above for each new prompt. -->
