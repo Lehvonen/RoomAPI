@@ -201,7 +201,7 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 
 **Performance**
 
-- **NFR-006**: On a developer laptop with 1,000 bookings stored, each request MUST complete in under 500 ms.
+- **NFR-006**: On a developer laptop with 1,000 bookings stored, each request MUST complete in under 500 ms. Login attempts that NFR-009 deliberately delays are exempt.
   *Acceptance*: a timed test of every operation stays under 500 ms.
 
 **Usability**
