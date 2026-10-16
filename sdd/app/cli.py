@@ -3,7 +3,8 @@
     python -m app.cli create-admin <username>            # prompts for the password
     python -m app.cli create-admin <username> --password <pw>
 
-Creates the user as an admin, or promotes an existing user.
+Creates the user as an admin, or promotes an existing user. Promoting also sets
+the given password, so the operator knows the admin's credentials.
 """
 
 import argparse
@@ -47,7 +48,10 @@ def create_admin(db_path: str, username: str, password: str) -> User:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
-    p = sub.add_parser("create-admin", help="create an admin user, or promote an existing user")
+    p = sub.add_parser(
+        "create-admin",
+        help="create an admin user, or promote an existing user (this also resets their password)",
+    )
     p.add_argument("username")
     p.add_argument("--password")
     p.add_argument("--db", default=os.environ.get("ROOMAPI_DB", "roomapi.db"))
