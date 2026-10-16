@@ -10,7 +10,7 @@ Log every prompt given to Spec Kit or the coding agent, in order. Paste the prom
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `597fdf0` |
 | Purpose | Fix the project's non-negotiable rules before any spec exists. |
@@ -42,7 +42,7 @@ Workflow: every change goes through a pull request linked to an issue, reviewed 
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `fdbbf6a` (draft), `f839e6f` (open questions answered) |
 | Purpose | Turn the vibe prompt's feature list into numbered, testable requirements. |
@@ -74,7 +74,7 @@ Leave the booking rules we have not decided yet as open questions for clarify: o
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `92d1e7b` |
 | Purpose | Find ambiguities the spec still had, before planning. |
@@ -96,7 +96,7 @@ Prompt (verbatim):
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `17a5fd1` |
 | Purpose | Fix the technical design: stack, data model, API contract, test approach. |
@@ -118,7 +118,7 @@ Prompt (verbatim):
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `23ee4cd`, issues linked in `7a12d8c` |
 | Purpose | Break the plan into ordered, test-first tasks that map onto GitHub issues. |
