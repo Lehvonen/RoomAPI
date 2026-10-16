@@ -223,4 +223,26 @@ Prompt (verbatim):
 /speckit-implement Only group D issue (#19): tasks T021–T026, User Story 3 (see rooms and availability) and User Story 4 (see and cancel my bookings). Start with writing the acceptance tests T021 and T024, including that a cancelled booking frees its slot. Run & commit while they fail, after that implement T022, T023, T025 and T026 until they pass. Do not continue after T026 and mark only those tasks done.
 ```
 
+### 10. Implement, group E (`/speckit-implement`)
+
+| Field | Entry |
+|---|---|
+| Date | 2026-10-16 |
+| Who prompted | Edited from an AI draft and run by Ivar Lehvonen himself as `/speckit-implement`. He held back the draft and sent the command in his own wording. |
+| Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
+| Commit | `5563aa5` (failing tests), `288b56d` (implementation), `16631c7` (inactive-room tests now run against external servers), `cc6e0de` (tasks marked done) |
+| Purpose | Build User Story 5, admins manage rooms and bookings (issue #20, tasks T027–T028), test-first. |
+| Reasoning for the wording | Names the admin cancel cases (any user's booking, and an ended one), which the #26 review found untested. |
+| Expected result | Failing admin tests committed first; then `POST /rooms` and `PATCH /rooms/{id}` until they pass. |
+| What came back | 25 acceptance tests, committed while all 25 failed. After implementation, all 125 tests pass. Coverage rose from 93% to 95%; `routers/rooms.py` and `schemas.py` are at 100%. Deactivation is refused with the number of blocking bookings, succeeds once they're cancelled, and ignores ended bookings. Admins cancel any booking, including ended ones, and are recorded as the canceller. |
+| Met expectations? | Yes. |
+| Issues (incorrect, incomplete or inefficient output) | None found. Admin cancelling needed no new code: `DELETE /bookings/{id}` already allowed it in #19. This PR adds its first tests. |
+| Refinement, why it was needed, and how the revised prompt improved the outcome | Ivar's own wording was used as is; no rerun needed. |
+
+Prompt (verbatim):
+
+```text
+/speckit-implement Issue group E (#20) ONLY: tasks T027–T028, User Story 5 (admins manage rooms and bookings). Start with the acceptance tests T027 first, including that an admin can cancel any user's booking and an ended booking. After that run them and commit them while they fail, then implement T028 until they pass. Do not continue after T028 and mark only those tasks done.
+```
+
 <!-- Copy a block above for each new prompt. -->

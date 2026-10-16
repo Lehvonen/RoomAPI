@@ -7,7 +7,7 @@ import pytest
 from .. import conftest
 from ..conftest import HELSINKI, book, create_room, helsinki, helsinki_date
 
-in_process_only = pytest.mark.skipif(conftest.external(), reason="sets up an inactive room directly")
+in_process_only = pytest.mark.skipif(conftest.external(), reason="uses fixed room names, which could collide on a shared server")
 
 
 def utc_z(day_offset: int, hh: int, mm: int = 0) -> str:
@@ -45,7 +45,6 @@ def test_get_active_room(client, user, room):
     assert r.json()["name"] == room["name"]
 
 
-@in_process_only
 def test_inactive_room_hidden_from_users(client, db_path, admin, user):
     closed = create_room(client, db_path, admin, active=False)
     r = client.get(f"/rooms/{closed['id']}", headers=user)
@@ -129,7 +128,6 @@ def test_availability_of_missing_room_404(client, user):
     assert "room" in r.json()["detail"].lower()  # not just "Not Found" from a missing route
 
 
-@in_process_only
 def test_availability_of_inactive_room_404(client, db_path, admin, user):
     closed = create_room(client, db_path, admin, active=False)
     r = availability(client, user, closed["id"], 2)

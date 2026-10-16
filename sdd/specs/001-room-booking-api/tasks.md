@@ -183,7 +183,7 @@ description: "Task list for the Room Booking API"
 
 ### Tests for User Story 5 (write first, must fail) ⚠️
 
-- [ ] T027 [P] [US5] Acceptance tests in `tests/acceptance/test_us5_admin.py`:
+- [X] T027 [P] [US5] Acceptance tests in `tests/acceptance/test_us5_admin.py`:
   - User Story 5, scenarios 1–5
   - FR-008: name unique regardless of case, on create and on rename (409); capacity 0 gives 422
   - FR-009: deactivating with a future booking gives 409 with the count; after cancelling it, deactivation succeeds and the room is hidden and unbookable; reactivating works
@@ -192,7 +192,7 @@ description: "Task list for the Room Booking API"
 
 ### Implementation for User Story 5
 
-- [ ] T028 [US5] Implement `POST /rooms` and `PATCH /rooms/{room_id}` in `app/routers/rooms.py` (admin only):
+- [X] T028 [US5] Implement `POST /rooms` and `PATCH /rooms/{room_id}` in `app/routers/rooms.py` (admin only):
   - name "1–100 characters", capacity "1 … 10,000", location "up to 200 characters", description "up to 2,000 characters"
   - 409 on a duplicate name
   - setting `is_active=false` gives 409 while the room has active bookings that haven't ended, with the count in the message
