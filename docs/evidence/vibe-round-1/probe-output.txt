@@ -1,0 +1,16 @@
+# Probe run 2026-10-16T10:01Z against vibe/ at commit 75113b5 (unchanged on main)
+# Command: PYTHONPATH=vibe vibe/.venv/Scripts/python docs/evidence/vibe-round-1/probe.py
+P1 | alice books one room for 10 years | HTTP 201 | accepted
+P2 | booking 03:00-04:00 UTC | HTTP 201 | accepted
+P3 | room deactivated after alice booked it | HTTP 200 | booking status=active, room lookup for alice HTTP 404
+P4a | GET /rooms/2**70 | HTTP 500 | Internal Server Error
+P4b | POST /bookings with room_id 2**70 | HTTP 500 | Internal Server Error
+P5 | booking on 9999-12-31 at UTC-5 (overflows year 9999 in UTC) | HTTP 500 | Internal Server Error
+P6 | booking sent as naive 09:00:00 (meant as Helsinki time) | HTTP 201 | stored start_time=2026-10-17T09:00:00Z (09:00 UTC = 12:00 in Helsinki)
+P7 | register with password 'aaaaaaaa' | HTTP 201 | accepted
+P8 | 50 wrong passwords, then the right one | HTTP 200 | wrong attempts returned [401]; no lockout or delay
+OK1 | overlapping booking on the same room | HTTP 409 | rejected
+OK2 | bob cancels alice's booking | HTTP 404 | refused
+OK3 | booking in the past | HTTP 422 | rejected
+OK4 | end before start | HTTP 422 | rejected
+OK5 | password storage | - | stored as pbkdf2_sha256 (salted hash, not plain text)
