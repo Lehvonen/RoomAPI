@@ -18,6 +18,15 @@
 | Client developer | Build a front end or integration on the API | Depends on a stable, documented interface and clear errors. |
 | Development team and course staff | Show that the system meets its specification | The project's evidence: every requirement must be traceable to a test. |
 
+## Clarifications
+
+### Session 2026-10-16
+
+- Q: Should the system limit repeated failed logins? → A: Slow down, never lock: after 5 failures for a username within 15 minutes, each further attempt for it waits 2 seconds first.
+- Q: How far ahead can a booking be made? → A: The start must be within 90 days from now.
+- Q: When a user asks for a room's availability on a date, which hours does the answer cover? → A: The date is a Helsinki calendar date, and the answer covers that day's opening hours, 08:00–18:00.
+- Q: Do users need to log out, ending a token before its 60 minutes are up? → A: No. There is no logout; tokens are valid until they expire.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Register and log in (Priority: P1)
@@ -109,6 +118,8 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 - A time sent without a timezone offset is rejected, never guessed.
 - A very large number, or a date at the edge of the calendar, in any ID or time field gets a client error, never a server error.
 - A booking that has already ended cannot be cancelled by a regular user.
+- A booking starting more than 90 days ahead is refused (FR-011).
+- Repeated failed logins slow down further attempts for that username but never lock it (NFR-009).
 - Cancelling an already cancelled booking is refused.
 - A cancelled booking does not block its slot.
 - An expired or tampered access token is refused like a missing one.
@@ -125,7 +136,7 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
   *Acceptance*: User Story 1, scenarios 1–2.
 - **FR-002**: The system MUST require passwords of 10–128 characters.
   *Acceptance*: a 9-character password is refused; a 10-character password is accepted.
-- **FR-003**: The system MUST let a registered user log in with username and password and receive an access token that expires after 60 minutes.
+- **FR-003**: The system MUST let a registered user log in with username and password and receive an access token that expires after 60 minutes. There is no logout: a token stays valid until it expires.
   *Acceptance*: User Story 1, scenario 3; a token older than 60 minutes is refused.
 - **FR-004**: The system MUST give the same refusal for a wrong password and for an unknown username.
   *Acceptance*: User Story 1, scenario 4.
@@ -145,13 +156,13 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 
 **Availability**
 
-- **FR-010**: The system MUST let a logged-in user see, for one active room and one calendar day, the booked intervals and the free intervals of that day.
-  *Acceptance*: User Story 3, scenario 2.
+- **FR-010**: The system MUST let a logged-in user see, for one active room and one calendar date in Helsinki time, the booked and free intervals within that day's opening hours (08:00–18:00, FR-012), returned in UTC. Free intervals are exactly the times that can still be booked.
+  *Acceptance*: User Story 3, scenario 2; for a day with one booking 10:00–11:00 Helsinki time, the free intervals are 08:00–10:00 and 11:00–18:00, given in UTC.
 
 **Bookings**
 
-- **FR-011**: The system MUST let a logged-in user book an active room for a time range whose end is after its start and whose start is not in the past.
-  *Acceptance*: User Story 2, scenarios 1 and 4.
+- **FR-011**: The system MUST let a logged-in user book an active room for a time range whose end is after its start, whose start is not in the past, and whose start is at most 90 days from now.
+  *Acceptance*: User Story 2, scenarios 1 and 4; a booking starting 91 days ahead is refused.
 - **FR-012**: A booking MUST start and end within opening hours, 08:00–18:00 in the organisation's time zone (Europe/Helsinki), on the same calendar day, and MUST last at most 4 hours.
   *Acceptance*: in Helsinki time, 08:00–12:00 is accepted; 07:30–08:30, 17:00–18:30, 09:00–13:30 and 17:00 to 09:00 the next day are refused, each with a message naming the rule.
 - **FR-013**: The system MUST never accept two active bookings for the same room whose time ranges overlap. Ranges include their start and exclude their end, so back-to-back bookings are allowed. This MUST hold for simultaneous requests.
@@ -178,6 +189,8 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
   *Acceptance*: each protected operation refuses a missing, expired or tampered token.
 - **NFR-003**: Every operation on a specific resource MUST check that the caller is allowed to act on it: their own booking, or any booking or room for admins.
   *Acceptance*: User Story 4, scenario 3; User Story 5, scenario 5.
+- **NFR-009**: After 5 failed logins for one username within 15 minutes, each further login attempt for that username MUST be answered only after a 2-second delay, whether the password is right or not. Accounts are never locked, so nobody can lock another user out.
+  *Acceptance*: the 6th attempt within 15 minutes takes at least 2 seconds; a correct password after 10 failures still logs in.
 
 **Reliability**
 
@@ -217,7 +230,8 @@ An administrator creates and edits rooms, deactivates rooms that are out of use,
 ## Assumptions
 
 - The organisation works in one time zone, Europe/Helsinki. The system uses it only to check opening hours (FR-012); clients still send explicit offsets (FR-017) and get UTC back.
-- Login attempts are not rate-limited in this version. The system runs locally for one organisation; rate limiting belongs to the network layer in front of it.
+- Login abuse is handled by slowing down attempts per username (NFR-009). Limits per network address are left to the network layer in front of the system, because a shared address would otherwise lock out everyone behind it.
+- There is no logout. Clients end a session by discarding the token, which expires after 60 minutes.
 - Admins are few and trusted. There is no audit log beyond who cancelled a booking.
 - Rooms are never deleted, only deactivated, so past bookings keep a valid room.
 - Booking capacity (number of attendees) is not tracked; capacity is information for the user.
