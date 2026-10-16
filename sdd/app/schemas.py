@@ -3,7 +3,7 @@
 from datetime import date, datetime, timezone
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, PlainSerializer
+from pydantic import AwareDatetime, BaseModel, Field, PlainSerializer
 
 from .config import MAX_ID
 
@@ -49,6 +49,14 @@ class RoomOut(BaseModel):
     is_active: bool
     created_at: UTCDatetime
     updated_at: UTCDatetime
+
+
+class BookingCreate(BaseModel):
+    """Times must carry an offset; without one Pydantic answers 422 (FR-017)."""
+
+    room_id: Id
+    start_time: AwareDatetime
+    end_time: AwareDatetime
 
 
 class BookingOut(BaseModel):
