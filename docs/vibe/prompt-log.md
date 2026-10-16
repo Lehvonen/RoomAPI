@@ -1,7 +1,7 @@
 # Vibe coding prompt log
 
 Source material for report §3.2 (master prompts) and §3.3 (prompt iteration log).
-Each round's raw agent output is kept verbatim in its own file (`round-N-output.md`).
+Each round's agent output is kept as pasted in its own file (`round-N-output.md`).
 
 Fill every `TODO` from what you actually did and saw. Nothing here should be reconstructed after the fact.
 
@@ -12,9 +12,10 @@ Fill every `TODO` from what you actually did and saw. Nothing here should be rec
 | Field | Entry |
 |---|---|
 | Date | 2026-10-13 |
+| Who prompted | Ivar Lehvonen |
 | Tool / model | Claude Code (TODO: model name) |
-| Commit | `vibe(round-1): room booking API from first prompt (FastAPI + SQLite)` |
-| Raw output | [`round-1-output.md`](round-1-output.md) |
+| Commit | `75113b5` |
+| Raw output | [`round-1-output.md`](round-1-output.md) (terminal paste, not verbatim; see the note at its top) |
 | Purpose | TODO |
 | Reasoning for the wording | TODO |
 | Expected result | TODO |
@@ -38,8 +39,11 @@ Only read and write files inside the vibe/ folder. Do not touch anything outside
 
 ## §3.3 Prompt iteration log
 
-The template asks for at least one example where a prompt failed or hallucinated and how it was refined. One row per failure.
+The template asks for at least one example where a prompt failed or hallucinated and how it was refined. One row per failure. Same columns as report §3.3.
 
-| # | Initial Prompt/Specification | AI Failure Mode / Bug Produced | Refined Prompt/Specification | Resulting Code Quality | What did not happen according to your plan (which task was not done) | Modified Prompt (how you modified it, and the modified prompt) |
-|---|---|---|---|---|---|---|
-| 1 | | | | | | |
+<!-- "What did not happen according to your plan": which task was not done.
+"Modified Prompt": how you modified the prompt, and the modified prompt. -->
+
+| Initial Prompt/Specification | AI Failure Mode / Bug Produced | Refined Prompt/Specification | Resulting Code Quality | What did not happen according to your plan | Modified Prompt |
+|---|---|---|---|---|---|
+| | | | | | |
