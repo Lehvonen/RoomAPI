@@ -76,7 +76,7 @@ description: "Task list for the Room Booking API"
 
 ### Tests for User Story 1 (write first, must fail) ⚠️
 
-- [ ] T014 [P] [US1] Acceptance tests in `tests/acceptance/test_us1_accounts.py`:
+- [X] T014 [P] [US1] Acceptance tests in `tests/acceptance/test_us1_accounts.py`:
   - User Story 1, scenarios 1–4
   - FR-001: username rules, and "ALICE" refused after "alice"
   - FR-002: 9-character password refused, 10 accepted, 129 refused
@@ -87,8 +87,8 @@ description: "Task list for the Room Booking API"
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement `POST /auth/register` (201, 409 name taken) and `GET /users/me` in `app/routers/auth.py`, with registration models in `app/schemas.py`: username "3–50 characters from `A–Z a–z 0–9 _ . -`", password "10–128 characters"
-- [ ] T016 [US1] Implement `POST /auth/login` (form fields; 200 token; 401 with the same message for an unknown user and a wrong password) in `app/routers/auth.py`, with a dummy hash check for unknown users so the timing matches
+- [X] T015 [US1] Implement `POST /auth/register` (201, 409 name taken) and `GET /users/me` in `app/routers/auth.py`, with registration models in `app/schemas.py`: username "3–50 characters from `A–Z a–z 0–9 _ . -`", password "10–128 characters"
+- [X] T016 [US1] Implement `POST /auth/login` (form fields; 200 token; 401 with the same message for an unknown user and a wrong password) in `app/routers/auth.py`, with a dummy hash check for unknown users so the timing matches
 
 **Checkpoint**: US1 tests pass. This is the MVP.
 
