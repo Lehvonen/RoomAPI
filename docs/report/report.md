@@ -159,6 +159,10 @@ Workspace Configuration:
 <!-- Critical evaluation backed by concrete examples; evidence-based vibe coding vs SDD comparison;
 successes and limitations; actionable best practices; balanced conclusion. -->
 
+<!-- Evidence to quote in the vibe-vs-SDD comparison: in vibe round 2 the agent changed API responses
+from UTC (Z) to local time (+03:00) without being asked, a contract change nobody agreed to
+(docs/evidence/vibe-round-2/findings.md, "What round 2 decided on its own"). -->
+
 ### 7.4 Proposed Specification-Driven Development Workflow
 
 <!-- A reusable workflow: each phase's objectives, activities, inputs, outputs and deliverables;

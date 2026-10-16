@@ -1,8 +1,11 @@
 import sqlite3
+from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 
-from ..db import from_db, get_db, now_utc, to_db, transaction
+from ..config import CLOSING_TIME, MAX_BOOKING_LENGTH, OPENING_TIME, SQLITE_MAX_INT
+from ..db import from_db, get_db, now_utc, to_db, to_local, transaction
 from ..schemas import BookingCreate, BookingOut
 from ..security import get_current_user
 
@@ -29,6 +32,24 @@ def booking_out(row: sqlite3.Row) -> BookingOut:
     )
 
 
+BookingId = Annotated[int, Path(ge=1, le=SQLITE_MAX_INT)]
+
+
+def booking_rule_violation(start: datetime, end: datetime) -> str | None:
+    """Check length and opening hours (in local time). Returns the problem, or None."""
+    if end - start > MAX_BOOKING_LENGTH:
+        return f"A booking may be at most {MAX_BOOKING_LENGTH.total_seconds() / 3600:g} hours long"
+    local_start, local_end = to_local(start), to_local(end)
+    opening, closing = OPENING_TIME.strftime("%H:%M"), CLOSING_TIME.strftime("%H:%M")
+    if (
+        local_start.date() != local_end.date()
+        or local_start.time() < OPENING_TIME
+        or local_end.time() > CLOSING_TIME
+    ):
+        return f"Rooms can only be booked between {opening} and {closing} local time, within one day"
+    return None
+
+
 def fetch_booking(db: sqlite3.Connection, booking_id: int) -> sqlite3.Row | None:
     return db.execute(f"{BOOKING_SELECT} WHERE b.id = ?", (booking_id,)).fetchone()
 
@@ -49,6 +70,9 @@ def create_booking(
 ):
     if body.start_time < now_utc():
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Cannot book a time in the past")
+    problem = booking_rule_violation(body.start_time, body.end_time)
+    if problem:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=problem)
 
     start, end = to_db(body.start_time), to_db(body.end_time)
     with transaction(db):
@@ -74,7 +98,7 @@ def list_bookings(
     include_cancelled: bool = False,
     upcoming_only: bool = False,
     all_users: bool = Query(default=False, description="Admins only: list every user's bookings"),
-    room_id: int | None = None,
+    room_id: int | None = Query(default=None, ge=1, le=SQLITE_MAX_INT),
     user: sqlite3.Row = Depends(get_current_user),
     db: sqlite3.Connection = Depends(get_db),
 ):
@@ -99,12 +123,12 @@ def list_bookings(
 
 
 @router.get("/{booking_id}", response_model=BookingOut)
-def get_booking(booking_id: int, user: sqlite3.Row = Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
+def get_booking(booking_id: BookingId, user: sqlite3.Row = Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
     return booking_out(get_visible_booking(db, booking_id, user))
 
 
 @router.delete("/{booking_id}", status_code=status.HTTP_204_NO_CONTENT)
-def cancel_booking(booking_id: int, user: sqlite3.Row = Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
+def cancel_booking(booking_id: BookingId, user: sqlite3.Row = Depends(get_current_user), db: sqlite3.Connection = Depends(get_db)):
     """Cancel a booking. Users may cancel their own; admins may cancel any. The record is kept as 'cancelled'."""
     row = get_visible_booking(db, booking_id, user)
     if row["status"] == "cancelled":
