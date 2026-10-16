@@ -19,16 +19,12 @@ CONTRACT = {
 }
 
 
-@pytest.fixture(scope="module")
-def spec():
-    from fastapi.testclient import TestClient
-
-    from app.main import create_app
-
-    with TestClient(create_app(":memory:")) as c:
-        r = c.get("/openapi.json")
-        assert r.status_code == 200
-        return r.json()
+@pytest.fixture
+def spec(client):
+    """The server under test's own description (in-process app, or ROOMAPI_BASE_URL)."""
+    r = client.get("/openapi.json")
+    assert r.status_code == 200
+    return r.json()
 
 
 @pytest.mark.parametrize("method, path", sorted(CONTRACT))
