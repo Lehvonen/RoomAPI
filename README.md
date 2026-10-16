@@ -6,11 +6,10 @@ once with Specification-Driven Development (GitHub Spec Kit).
 
 ## Team
 
-| Name | GitHub | Role |
-|------|--------|------|
-| Ivar Lehvonen | @… | |
-| … | @… | |
-| … | @… | |
+| Student Name | Student ID | GitHub | Role in the project | Contribution (%) |
+|---|---|---|---|---|
+| Ivar Lehvonen | | @Lehvonen | Prompt Engineer | |
+| Kristoffer Elfving-Millan | | | Code Auditor | |
 
 ## Repository layout
 
@@ -20,8 +19,9 @@ once with Specification-Driven Development (GitHub Spec Kit).
 
 ## Running
 
-Instructions are added once the implementations exist.
+- Vibe-coded version: see [`vibe/README.md`](vibe/README.md)
+- SDD version: added once the implementation exists
 
 ## Report
 
-See `docs/report/`.
+The report is in [`docs/report/report.md`](docs/report/report.md).
