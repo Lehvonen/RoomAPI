@@ -10,7 +10,7 @@ Log every prompt given to Spec Kit or the coding agent, in order. Paste the prom
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `597fdf0` |
 | Purpose | Fix the project's non-negotiable rules before any spec exists. |
@@ -42,7 +42,7 @@ Workflow: every change goes through a pull request linked to an issue, reviewed 
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `fdbbf6a` (draft), `f839e6f` (open questions answered) |
 | Purpose | Turn the vibe prompt's feature list into numbered, testable requirements. |
@@ -74,7 +74,7 @@ Leave the booking rules we have not decided yet as open questions for clarify: o
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `92d1e7b` |
 | Purpose | Find ambiguities the spec still had, before planning. |
@@ -96,7 +96,7 @@ Prompt (verbatim):
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `17a5fd1` |
 | Purpose | Fix the technical design: stack, data model, API contract, test approach. |
@@ -118,7 +118,7 @@ Prompt (verbatim):
 | Field | Entry |
 |---|---|
 | Date | 2026-10-16 |
-| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted; Ivar's approval is pending (PR for #12). |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #12. The prompt was AI-drafted and approved by Ivar Lehvonen on 2026-10-16. |
 | Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
 | Commit | `23ee4cd`, issues linked in `7a12d8c` |
 | Purpose | Break the plan into ordered, test-first tasks that map onto GitHub issues. |
@@ -133,6 +133,28 @@ Prompt (verbatim):
 
 ```text
 /speckit-tasks Tests first: for each user story, the acceptance tests come before the implementation tasks. Size the tasks so each one fits a small pull request, and group them so the work can be split into a handful of GitHub issues.
+```
+
+### 6. Implement, group A (`/speckit-implement`)
+
+| Field | Entry |
+|---|---|
+| Date | 2026-10-16 |
+| Who prompted | Claude Code, on behalf of Ivar Lehvonen, who delegated #16. The prompt was AI-drafted. |
+| Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
+| Commit | `3169baa` (setup), `9fa2bd1`–`61b71d7` (foundation), `6a2ef7c` (tasks marked done) |
+| Purpose | Build the project setup and foundation (issue #16, tasks T001–T013) without starting any user story. |
+| Reasoning for the wording | Limits the run to one issue group, so the work lands as one reviewable pull request and the stories stay test-first in their own pull requests. |
+| Expected result | uv project, CI, config, database, models, time rules, security, schemas, app factory, admin CLI and test harness; T001–T013 marked done. |
+| What came back | All 13 tasks done. The health smoke test passes; coverage is 40%, as expected with no story tests yet. A manual check of the time rules: 08:00–12:00 accepted; 07:30–08:30, 17:00–18:30, 09:00–13:30 and an overnight booking refused; a year-9999 start refused by the 90-day rule instead of overflowing; the opening window follows the 2026-10-25 change to winter time. |
+| Met expectations? | Yes, after two corrections to the task list. |
+| Issues (incorrect, incomplete or inefficient output) | (1) T004's 80% coverage gate would have failed CI on every pull request until group F, and pytest fails when it finds no tests at all. The gate moved to T035, and T013 gained a health smoke test (`50f5b2d`), before any code was written. (2) Starlette's test client warned that it now expects `httpx2`, which was added as a dev dependency and recorded in research R8. |
+| Refinement, why it was needed, and how the revised prompt improved the outcome | No prompt change. The task list was corrected instead, so CI can pass from the first pull request, as the constitution requires. |
+
+Prompt (verbatim):
+
+```text
+/speckit-implement Only issue group A (#16): tasks T001–T013, project setup and foundation. Stop after T013 and mark only those tasks done.
 ```
 
 <!-- Copy a block above for each new prompt. -->

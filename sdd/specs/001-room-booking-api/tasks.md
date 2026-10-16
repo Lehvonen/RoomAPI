@@ -24,10 +24,10 @@ description: "Task list for the Room Booking API"
 
 **Issue group A: Project setup and foundation** (Phases 1–2)
 
-- [ ] T001 Create the uv project in `pyproject.toml`: `requires-python = ">=3.11"`; dependencies fastapi, uvicorn, sqlalchemy>=2, pydantic>=2, argon2-cffi, pyjwt, tzdata, python-multipart; dev dependencies pytest, pytest-cov, httpx. Run `uv lock` to create `uv.lock`
-- [ ] T002 [P] Create the package skeleton `app/__init__.py`, `app/routers/__init__.py`, `tests/__init__.py`, `tests/acceptance/__init__.py`, `tests/unit/__init__.py`
-- [ ] T003 [P] Add `.gitignore` entries for `*.db`, `.venv/`, `.coverage`, `htmlcov/` in `sdd/.gitignore`
-- [ ] T004 [P] Add the GitHub Actions workflow `.github/workflows/sdd-tests.yml` (repository root): on push and pull_request, `astral-sh/setup-uv`, `uv sync` and `uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=80`, with working directory `sdd`
+- [X] T001 Create the uv project in `pyproject.toml`: `requires-python = ">=3.11"`; dependencies fastapi, uvicorn, sqlalchemy>=2, pydantic>=2, argon2-cffi, pyjwt, tzdata, python-multipart; dev dependencies pytest, pytest-cov, httpx. Run `uv lock` to create `uv.lock`
+- [X] T002 [P] Create the package skeleton `app/__init__.py`, `app/routers/__init__.py`, `tests/__init__.py`, `tests/acceptance/__init__.py`, `tests/unit/__init__.py`
+- [X] T003 [P] Add `.gitignore` entries for `*.db`, `.venv/`, `.coverage`, `htmlcov/` in `sdd/.gitignore`
+- [X] T004 [P] Add the GitHub Actions workflow `.github/workflows/sdd-tests.yml` (repository root): on push and pull_request, `astral-sh/setup-uv`, `uv sync` and `uv run pytest --cov=app --cov-report=term-missing`, with working directory `sdd`. The 80% gate (`--cov-fail-under=80`, SC-005) is switched on in T035, once every story has tests
 
 ---
 
@@ -35,33 +35,34 @@ description: "Task list for the Room Booking API"
 
 **⚠️ CRITICAL**: no user story work can begin until this phase is complete.
 
-- [ ] T005 Implement settings in `app/config.py`, read from environment variables: `ROOMAPI_DB` (default `roomapi.db`), `ROOMAPI_SECRET_KEY` (required: refuse to start without it), `ROOMAPI_TOKEN_MINUTES` (60), `ROOMAPI_LOGIN_DELAY_SECONDS` (2), plus constants for time zone `Europe/Helsinki`, opening hours 08:00–18:00, maximum length 4 h and horizon 90 days
-- [ ] T006 Implement the engine, session dependency and schema creation in `app/db.py`. Turn off pysqlite's own transaction handling and emit `BEGIN IMMEDIATE` on SQLAlchemy's `begin` event (research R1); `PRAGMA foreign_keys=ON`
-- [ ] T007 Implement the SQLAlchemy models in `app/models.py`, exactly as in data-model.md:
+- [X] T005 Implement settings in `app/config.py`, read from environment variables: `ROOMAPI_DB` (default `roomapi.db`), `ROOMAPI_SECRET_KEY` (required: refuse to start without it), `ROOMAPI_TOKEN_MINUTES` (60), `ROOMAPI_LOGIN_DELAY_SECONDS` (2), plus constants for time zone `Europe/Helsinki`, opening hours 08:00–18:00, maximum length 4 h and horizon 90 days
+- [X] T006 Implement the engine, session dependency and schema creation in `app/db.py`. Turn off pysqlite's own transaction handling and emit `BEGIN IMMEDIATE` on SQLAlchemy's `begin` event (research R1); `PRAGMA foreign_keys=ON`
+- [X] T007 Implement the SQLAlchemy models in `app/models.py`, exactly as in data-model.md:
   - User: username "3–50 characters from `A–Z a–z 0–9 _ . -`", unique case-insensitive (`COLLATE NOCASE`)
   - Room: name "1–100 characters", unique case-insensitive; capacity "1 … 10,000"; location "up to 200 characters"; description "up to 2,000 characters"; `is_active` default true
   - Booking: `CHECK (end_time > start_time)`; status `active` or `cancelled`; `cancelled_at`, `cancelled_by`; index on `(room_id, status, start_time, end_time)`
   - FailedLogin: username lower-cased, `attempted_at`
-- [ ] T008 [P] Implement the time rules in `app/timerules.py`:
+- [X] T008 [P] Implement the time rules in `app/timerules.py`:
   - `to_utc(aware) -> datetime`, raising a validation error on `OverflowError`
   - `check_booking_window(start, end, now)`, enforcing end > start, start ≥ now, start ≤ now + 90 days (checked before conversion), and the same Helsinki date within 08:00–18:00 with length ≤ 4 h. Each failure gives its own plain-English message
   - `opening_window(date) -> (opens_utc, closes_utc)`
-- [ ] T009 [P] Implement password hashing (Argon2id `PasswordHasher`) and JWT create and decode (HS256; `sub`, `iat`, `exp`) in `app/security.py`, plus the `get_current_user` (401) and `require_admin` (403) dependencies
-- [ ] T010 [P] Implement the shared Pydantic types in `app/schemas.py`:
+- [X] T009 [P] Implement password hashing (Argon2id `PasswordHasher`) and JWT create and decode (HS256; `sub`, `iat`, `exp`) in `app/security.py`, plus the `get_current_user` (401) and `require_admin` (403) dependencies
+- [X] T010 [P] Implement the shared Pydantic types in `app/schemas.py`:
   - `Id = Annotated[int, Field(ge=1, le=2**63-1)]`
   - `AwareDatetime` inputs
   - a UTC serializer that outputs `Z`
   - the User, Room, Booking and Availability response models from contracts/api.md, with User never including the password or hash
-- [ ] T011 Implement the app factory in `app/main.py`: include the routers, `GET /health`, and an `OverflowError` and `ValueError` handler that returns 422. The app factory takes an optional database path for tests
-- [ ] T012 Implement the operator command `python -m app.cli create-admin <username> [--password]` in `app/cli.py`. It creates an admin, or promotes an existing user. The password must be 10–128 characters (FR-006, FR-002)
-- [ ] T013 Implement the test harness in `tests/conftest.py` (research R7):
+- [X] T011 Implement the app factory in `app/main.py`: include the routers, and `GET /health`. Only the specific time-conversion errors become 422 (research R5): `timerules` turns `OverflowError` into a validation error, and there is no catch-all `ValueError` handler, so real bugs still surface. The app factory takes an optional database path for tests
+- [X] T012 Implement the operator command `python -m app.cli create-admin <username> [--password]` in `app/cli.py`. It creates an admin, or promotes an existing user. The password must be 10–128 characters (FR-006, FR-002)
+- [X] T013 Implement the test harness in `tests/conftest.py` (research R7):
   - a `client` fixture that is a `TestClient(create_app(tmp_db))` or, when `ROOMAPI_BASE_URL` is set, an `httpx.Client(base_url=...)`
   - an `admin` fixture (in-process: via `app.cli`; external: `ROOMAPI_TEST_ADMIN` and `ROOMAPI_TEST_ADMIN_PASSWORD`)
   - `register_and_login` and `auth` helpers
   - `helsinki(days_ahead, hh, mm)`, which returns an ISO string with the correct offset
   - `ROOMAPI_LOGIN_DELAY_SECONDS=0.2` by default, overridden in the slow-down test
+  - a smoke test of `GET /health` (no token needed, NFR-002) in `tests/acceptance/test_health.py`, so CI has a passing test from the start
 
-**Checkpoint**: the foundation is ready. `uv run pytest` runs and collects zero tests.
+**Checkpoint**: the foundation is ready. `uv run pytest` runs the health smoke test, and CI is green.
 
 ---
 
@@ -210,7 +211,7 @@ description: "Task list for the Room Booking API"
 - [ ] T032 [P] Timing test in `tests/acceptance/test_nfr_performance.py` (NFR-006): with 1,000 bookings seeded, each operation responds in under 500 ms
 - [ ] T033 [P] Security checks in `tests/acceptance/test_nfr_security.py` (NFR-001): the stored hash starts with `$argon2id$` and differs for two users with the same password; no response body contains the password
 - [ ] T034 [P] Interface documentation test in `tests/acceptance/test_nfr_docs.py` (NFR-007): `/openapi.json` lists every endpoint in contracts/api.md, with its error responses
-- [ ] T035 Write the traceability table from each FR, NFR and SC to its tests in `specs/001-room-booking-api/traceability.md`
+- [ ] T035 Write the traceability table from each FR, NFR and SC to its tests in `specs/001-room-booking-api/traceability.md`, and switch on the CI coverage gate `--cov-fail-under=80` (SC-005) in `.github/workflows/sdd-tests.yml`
 - [ ] T036 [P] Export the OpenAPI document to `../docs/openapi.json`, and add the run instructions to `sdd/README.md`
 - [ ] T037 Run the [quickstart.md](quickstart.md) validation, including the suite against the vibe version via `ROOMAPI_BASE_URL`, and save the output in `../docs/evidence/`
 
