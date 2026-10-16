@@ -30,12 +30,11 @@ def test_book_free_slot(client, user, room):
 
 
 def test_offset_input_returned_as_utc(client, user, room):
-    day = helsinki_date(2).isoformat()
-    r = book(client, user, room["id"], f"{day}T09:00:00+03:00", f"{day}T10:00:00+03:00")
-    if r.status_code == 422:  # winter time: +03:00 is outside opening hours by an hour, so use +02:00
-        r = book(client, user, room["id"], f"{day}T09:00:00+02:00", f"{day}T10:00:00+02:00")
+    start = helsinki(2, 9)  # carries +03:00 in summer, +02:00 in winter
+    r = book(client, user, room["id"], start, helsinki(2, 10))
     assert r.status_code == 201, r.text
     assert r.json()["start_time"].endswith("Z")
+    assert parse_z(r.json()["start_time"]) == datetime.fromisoformat(start)
 
 
 # --- Scenarios 2, 3 / FR-013: no overlaps, back-to-back allowed ---------------------
@@ -100,7 +99,7 @@ def test_within_opening_hours_and_four_hours_accepted(client, user, room):
         ((1, 7, 30), (1, 8, 30), "08:00"),
         ((1, 17, 0), (1, 18, 30), "08:00"),
         ((1, 9, 0), (1, 13, 30), "4 hours"),
-        ((1, 17, 0), (2, 9, 0), "4 hours"),
+        ((1, 17, 0), (2, 9, 0), "same day"),
     ],
 )
 def test_booking_rules_refused_with_message(client, user, room, start, end, rule):
