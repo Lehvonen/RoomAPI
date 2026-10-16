@@ -53,6 +53,6 @@ All technical unknowns for [plan.md](plan.md) are resolved below. The constituti
 
 ## R8. Project and dependency management
 
-- **Decision**: one uv project in `sdd/` (`pyproject.toml`, `uv.lock`), Python ≥ 3.11. Runtime dependencies: fastapi, uvicorn, sqlalchemy, pydantic, argon2-cffi, pyjwt, tzdata, python-multipart (for the login form). Development dependencies: pytest, pytest-cov, httpx.
+- **Decision**: one uv project in `sdd/` (`pyproject.toml`, `uv.lock`), Python ≥ 3.11. Runtime dependencies: fastapi, uvicorn, sqlalchemy, pydantic, argon2-cffi, pyjwt, tzdata, python-multipart (for the login form). Development dependencies: pytest, pytest-cov, httpx (external-server test client), httpx2 (which Starlette's in-process test client now expects).
 - **Rationale**: matches the constitution; `uv sync` and `uv run pytest` work the same locally and in CI.
 - **Alternatives considered**: pip with requirements files (vibe's approach, no lock file).
