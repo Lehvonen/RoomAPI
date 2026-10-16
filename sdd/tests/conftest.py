@@ -129,3 +129,35 @@ def room(client, db_path, admin) -> dict:
 
 def book(client, headers: dict[str, str], room_id: int, start: str, end: str):
     return client.post("/bookings", json={"room_id": room_id, "start_time": start, "end_time": end}, headers=headers)
+
+
+def insert_ended_booking(db_path: str, room_id: int, username: str) -> int:
+    """In-process only: a booking that has already ended, which the API can't create (FR-011)."""
+    from datetime import timezone
+
+    from sqlalchemy import select
+    from sqlalchemy.orm import Session
+
+    from app.db import make_engine
+    from app.models import Booking, User
+
+    engine = make_engine(db_path)
+    try:
+        with Session(engine) as session:
+            user_id = session.scalars(select(User.id).where(User.username == username)).one()
+            end = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(hours=1)
+            booking = Booking(room_id=room_id, user_id=user_id, start_time=end - timedelta(hours=1), end_time=end)
+            session.add(booking)
+            session.commit()
+            return booking.id
+    finally:
+        engine.dispose()
+
+
+def booking_row(db_path: str, booking_id: int) -> dict:
+    """In-process only: the stored booking, for checking status and who cancelled it (FR-015)."""
+    import sqlite3
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        return dict(conn.execute("SELECT * FROM bookings WHERE id = ?", (booking_id,)).fetchone())

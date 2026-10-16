@@ -32,13 +32,13 @@ def check_booking_window(start: datetime, end: datetime, now: datetime) -> tuple
         raise BookingRuleError("Cannot book a time in the past")
     if start > now + BOOKING_HORIZON:
         raise BookingRuleError("Bookings can start at most 90 days ahead")
-    if end - start > MAX_BOOKING_LENGTH:
-        raise BookingRuleError("A booking can last at most 4 hours")
 
     start_utc, end_utc = to_utc(start), to_utc(end)
     start_local, end_local = start_utc.astimezone(TIMEZONE), end_utc.astimezone(TIMEZONE)
     if start_local.date() != end_local.date():
         raise BookingRuleError("A booking must start and end on the same day (Helsinki time)")
+    if end_utc - start_utc > MAX_BOOKING_LENGTH:
+        raise BookingRuleError("A booking can last at most 4 hours")
     opens, closes = opening_window(start_local.date())
     if start_utc < opens or end_utc > closes:
         raise BookingRuleError("Rooms can only be booked between 08:00 and 18:00 Helsinki time")

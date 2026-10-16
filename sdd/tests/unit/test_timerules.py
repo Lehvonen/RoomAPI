@@ -39,6 +39,11 @@ def test_exactly_four_hours_accepted():
     check_booking_window(at(DAY, 9), at(DAY, 13), NOW)
 
 
+def test_overnight_booking_gets_the_same_day_message():
+    with pytest.raises(BookingRuleError, match="same day"):
+        check_booking_window(at(DAY, 17), at(date(2026, 10, 6), 9), NOW)
+
+
 def test_four_hours_and_a_minute_refused():
     with pytest.raises(BookingRuleError, match="4 hours"):
         check_booking_window(at(DAY, 9), at(DAY, 13, 1), NOW)
