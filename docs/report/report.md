@@ -4,8 +4,8 @@
 
 | Student Name | Student ID | Role in the project | Contribution (%) |
 |---|---|---|---|
-| Ivar Lehvonen | | Prompt Engineer | |
-| Kristoffer Elfving-Millan | | Code Auditor | |
+| Ivar Lehvonen | 2202699 | Prompt Engineer | TODO |
+| Kristoffer Elfving-Millan | 2201244 | Code Auditor | TODO |
 
 ## Executive Summary
 
@@ -57,7 +57,12 @@ AI Generation & Orchestration Tools: TODO
 
 ### 2.5 Interface & API Specifications
 
+<!-- The API the system exposes: endpoints, methods, who may call them, request and response schemas, status codes.
+The exported OpenAPI spec goes in docs/. -->
+
 ### 2.6 How these requirements and specifications were created (using SDD AI tools)
+
+<!-- How the SDD AI tools (Spec Kit + coding agent) were used to produce the requirements and specifications above. -->
 
 ## 3. Vibe coding and your project (5 pts)
 
@@ -75,6 +80,10 @@ expected output, evaluation, issues, refinement and why, how the revision improv
 Include representative prompt-response examples and reflect on the importance of prompt engineering. -->
 
 ### 3.3 Prompt Iteration Log
+
+<!-- An example where a prompt failed or hallucinated, and how the prompt or specification was refined (source: docs/vibe/prompt-log.md §3.3).
+"What did not happen according to your plan": which task was not done.
+"Modified Prompt": how you modified the prompt, and the modified prompt. -->
 
 | Initial Prompt/Specification | AI Failure Mode / Bug Produced | Refined Prompt/Specification | Resulting Code Quality | What did not happen according to your plan | Modified Prompt |
 |---|---|---|---|---|---|
@@ -96,6 +105,8 @@ Include representative prompt-response examples and reflect on the importance of
 SRS, system constraints, interfaces, acceptance criteria, compliance requirements. -->
 
 ### 4.4 SDD Workflow and Implementation
+
+<!-- Which workflow was used. Any existing workflow can be adopted, or propose the team's own. -->
 
 ### 4.5 Prompts
 
