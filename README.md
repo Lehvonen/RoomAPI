@@ -8,8 +8,8 @@ once with Specification-Driven Development (GitHub Spec Kit).
 
 | Student Name | Student ID | GitHub | Role in the project | Contribution (%) |
 |---|---|---|---|---|
-| Ivar Lehvonen | | @Lehvonen | Prompt Engineer | |
-| Kristoffer Elfving-Millan | | | Code Auditor | |
+| Ivar Lehvonen | 2202699 | @Lehvonen | Prompt Engineer | TODO |
+| Kristoffer Elfving-Millan | 2201244 | @iPonkko | Code Auditor | TODO |
 
 ## Repository layout
 

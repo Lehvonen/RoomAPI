@@ -5,7 +5,7 @@
 Format: `type(ref): description`
 
 - `ref` is a spec ID (`FR-04`, `NFR-02`), a prompt round (`round-3`),
-  or a report section (`report-s5`)
+  a report section (`report-s5`), or `report` for a change spanning several sections
 - types: feat, fix, test, docs, spec, vibe, chore
 
 Examples:
