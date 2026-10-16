@@ -1,0 +1,18 @@
+# Probe run 2026-10-16T10:23Z against vibe/ at commit b68a979 (round 2)
+# Windows:     PYTHONPATH=vibe vibe/.venv/Scripts/python docs/evidence/vibe-round-2/probe.py
+# macOS/Linux: PYTHONPATH=vibe vibe/.venv/bin/python docs/evidence/vibe-round-2/probe.py
+P1 | alice books one room for 10 years | HTTP 422 | {"detail":"A booking may be at most 8 hours long"}
+P2 | booking 03:00-04:00 UTC | HTTP 422 | {"detail":"Rooms can only be booked between 07:00 and 20:00 local time, within one day"}
+P3 | room deactivated after alice booked it | HTTP 200 | booking status=cancelled, room lookup for alice HTTP 404
+P4a | GET /rooms/2**70 | HTTP 422 | {"detail":[{"type":"less_than_equal","loc":["path","room_id"],"msg":"Input shoul
+P4b | POST /bookings with room_id 2**70 | HTTP 422 | {"detail":[{"type":"less_than_equal","loc":["body","room_id"],"msg":"Input shoul
+P5 | booking on 9999-12-31 at UTC-5 (overflows year 9999 in UTC) | HTTP 422 | {"detail":[{"type":"value_error","loc":["body","start_time"],"msg":"Value error,
+P6 | booking sent as naive 09:00:00 (meant as Helsinki summer time, UTC+3) | HTTP 201 | stored start_time=2026-10-17T09:00:00+03:00
+P7 | register with password 'aaaaaaaa' | HTTP 422 | {"detail":[{"type":"string_too_short","loc":["body","password"],"msg":"String should have at least 10 characters","input":"aaaaaaaa","ctx":{"min_length":10}}]}
+P8 | 50 wrong passwords, then the right one | HTTP 429 | wrong attempts returned [401, 429]; locked out (429)
+N1 | attacker sends 5 wrong passwords for alice, then alice logs in correctly | HTTP 429 | alice locked out
+OK1 | overlapping booking on the same room | HTTP 409 | rejected
+OK2 | bob cancels alice's booking | HTTP 404 | refused
+OK3 | booking in the past | HTTP 422 | rejected: Cannot book a time in the past
+OK4 | end before start | HTTP 422 | rejected
+OK5 | password storage (white-box: read from SQLite) | - | stored as pbkdf2_sha256 (salted hash, not plain text)
