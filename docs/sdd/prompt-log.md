@@ -179,4 +179,26 @@ Prompt (verbatim):
 /speckit-implement Only issue group B (#17): tasks T014–T016, User Story 1 (register and log in). Test-first: write T014's acceptance tests, run them and commit them while they fail, then implement T015 and T016 until they pass. Also lower-case and limit to 50 characters the username stored in failed_logins. Do not continue after T016 and mark only those tasks done.
 ```
 
+### 8. Implement, group C (`/speckit-implement`)
+
+| Field | Entry |
+|---|---|
+| Date | 2026-10-16 |
+| Who prompted | AI-drafted, edited and approved by Ivar Lehvonen before the run. He held back the first draft and sent his own wording. |
+| Tool / model | Spec Kit 1.1.4.dev0 with the Claude Code integration, run by Claude Code (`claude-opus-5-5`) |
+| Commit | `337f881` (failing tests), `75824b9` (implementation), `77f7dce` (mutation-check evidence), `b566b7d` (tasks marked done) |
+| Purpose | Build User Story 2, booking a room (issue #18, tasks T017–T020), test-first. |
+| Reasoning for the wording | Names all three test tasks and their order before the implementation. States the one rule the #23 review flagged: a broken booking rule must give 422 with its message, never 500. |
+| Expected result | Failing booking, concurrency and time-rule tests committed first; then `POST /bookings` until they pass. |
+| What came back | 24 acceptance tests (US2 and the 20-request concurrency test), committed while all 24 failed, and 19 time-rule unit tests. After implementation, all 68 tests pass. Coverage rose from 74% to 92%; `routers/bookings.py` is at 100%. A mutation check removed the `BEGIN IMMEDIATE` lock: the concurrency test then failed with 10, 5 and 7 double bookings in three runs, so it really catches the race ([evidence](../evidence/sdd/concurrency-mutation-check.md)). |
+| Met expectations? | Yes, with three deviations, listed under Issues. |
+| Issues (incorrect, incomplete or inefficient output) | (1) The 19 time-rule unit tests already passed when committed, because `timerules.py` was built in the foundation (the deviation recorded in the plan's Complexity Tracking). (2) Two "room not found" tests first passed for the wrong reason: with no `/bookings` route, FastAPI also answers 404. They now also check the message, so they failed until the endpoint existed. (3) T017's "a cancelled booking doesn't block its slot" needs the cancel endpoint, so it moves to US4's tests (T024, scenario 2). Creating rooms is US5, so tests set rooms up through the harness: directly in the test database in-process, or through the admin API against another server. |
+| Refinement, why it was needed, and how the revised prompt improved the outcome | Ivar's rewrite was used as is; no rerun needed. |
+
+Prompt (verbatim):
+
+```text
+/speckit-implement Issue group C only (#18) : tasks T017–T020, User Story 2 (book a room). Write the acceptance tests (T017) first and the 20-request concurrency test (T018) and the time-rule unit tests (T019). Run them and commit them while they fail, then implement T020 until they pass. Booking-rule errors must come back as 422 with their message, never as 500. Do not continue after T020 and mark only those tasks done.
+```
+
 <!-- Copy a block above for each new prompt. -->

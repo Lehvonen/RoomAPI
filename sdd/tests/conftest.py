@@ -91,3 +91,41 @@ def helsinki_date(days_ahead: int) -> date:
 def helsinki(days_ahead: int, hh: int, mm: int = 0) -> str:
     """ISO time with the correct Helsinki offset for that day (summer or winter time)."""
     return datetime.combine(helsinki_date(days_ahead), time(hh, mm), tzinfo=HELSINKI).isoformat()
+
+
+def create_room(client, db_path: str, admin_headers: dict[str, str], *, name: str | None = None,
+                capacity: int = 8, active: bool = True) -> dict:
+    """Set up a room. In-process it is written to the test database directly, because room
+    management (US5) is built later; against an external server it goes through the admin API."""
+    name = name or unique("room")
+    if external():
+        r = client.post("/rooms", json={"name": name, "capacity": capacity}, headers=admin_headers)
+        assert r.status_code == 201, r.text
+        room = r.json()
+        if not active:
+            r = client.patch(f"/rooms/{room['id']}", json={"is_active": False}, headers=admin_headers)
+            assert r.status_code == 200, r.text
+        return room
+    from sqlalchemy.orm import Session
+
+    from app.db import make_engine
+    from app.models import Room
+
+    engine = make_engine(db_path)
+    try:
+        with Session(engine) as session:
+            room = Room(name=name, capacity=capacity, is_active=active)
+            session.add(room)
+            session.commit()
+            return {"id": room.id, "name": room.name}
+    finally:
+        engine.dispose()
+
+
+@pytest.fixture
+def room(client, db_path, admin) -> dict:
+    return create_room(client, db_path, admin)
+
+
+def book(client, headers: dict[str, str], room_id: int, start: str, end: str):
+    return client.post("/bookings", json={"room_id": room_id, "start_time": start, "end_time": end}, headers=headers)

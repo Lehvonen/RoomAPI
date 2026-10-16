@@ -1,6 +1,9 @@
 """User Story 1 - Register and log in (FR-001–FR-006, NFR-002). Black-box unless marked."""
 
+import os
+import random
 import sqlite3
+import string
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -48,8 +51,14 @@ def test_invalid_usernames_refused(client, name):
 
 @pytest.mark.parametrize("length", [3, 50])
 def test_username_length_boundaries_accepted(client, length):
-    name = (unique("u").replace("_", "") * 10)[:length]
-    assert register(client, name).status_code == 201
+    # Random names, so a long-running shared server (e.g. vibe in Phase 5) is unlikely to collide;
+    # one retry covers the rare 3-character collision.
+    for _ in range(2):
+        name = "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
+        r = register(client, name)
+        if r.status_code != 409:
+            break
+    assert r.status_code == 201
 
 
 # --- FR-002: password length -----------------------------------------------------
@@ -121,11 +130,19 @@ def test_profile_without_token_refused(client):
     assert client.get("/users/me").status_code == 401
 
 
-def test_profile_with_tampered_token_refused(client, user):
+def test_profile_with_tampered_signature_refused(client, user):
     token = user["Authorization"].removeprefix("Bearer ")
     head, payload, signature = token.split(".")
     tampered = f"{head}.{payload}.{signature[::-1]}"
     assert client.get("/users/me", headers={"Authorization": f"Bearer {tampered}"}).status_code == 401
+
+
+def test_profile_with_tampered_claims_refused(client, user, other_user):
+    """Swapping in another user's claims keeps the signature but must still be refused."""
+    head, _, signature = user["Authorization"].removeprefix("Bearer ").split(".")
+    _, other_payload, _ = other_user["Authorization"].removeprefix("Bearer ").split(".")
+    forged = f"{head}.{other_payload}.{signature}"
+    assert client.get("/users/me", headers={"Authorization": f"Bearer {forged}"}).status_code == 401
 
 
 @in_process_only
@@ -135,7 +152,7 @@ def test_profile_with_expired_token_refused(client, user):
     past = datetime.now(timezone.utc) - timedelta(hours=2)
     expired = jwt.encode(
         {"sub": claims["sub"], "iat": past, "exp": past + timedelta(minutes=60)},
-        conftest.os.environ["ROOMAPI_SECRET_KEY"],
+        os.environ["ROOMAPI_SECRET_KEY"],
         algorithm="HS256",
     )
     assert client.get("/users/me", headers={"Authorization": f"Bearer {expired}"}).status_code == 401
