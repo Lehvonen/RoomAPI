@@ -2,7 +2,7 @@
 
 Built with loose prompts and no specification, as the baseline for comparison.
 
-Status: Frozen as of 2026-10-16, commit b68a979 (after 2 prompt rounds). Do not edit after.
+Status: Frozen as of 2026-10-16. Code frozen at commit b68a979, after 2 prompt rounds. Do not edit after.
 
 ## Room Booking API
 
