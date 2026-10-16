@@ -3,7 +3,7 @@
 from datetime import date, datetime, timezone
 from typing import Annotated, Literal
 
-from pydantic import AwareDatetime, BaseModel, Field, PlainSerializer
+from pydantic import AwareDatetime, BaseModel, Field, PlainSerializer, model_validator
 
 from .config import MAX_ID
 
@@ -38,6 +38,33 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class RoomCreate(BaseModel):
+    """Room fields and limits from data-model.md (FR-008)."""
+
+    name: str = Field(min_length=1, max_length=100)
+    capacity: int = Field(ge=1, le=10_000)
+    location: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class RoomUpdate(BaseModel):
+    """Any subset of the room's fields (FR-008), plus is_active (FR-009)."""
+
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    capacity: int | None = Field(default=None, ge=1, le=10_000)
+    location: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+    is_active: bool | None = None
+
+    @model_validator(mode="after")
+    def required_fields_not_null(self):
+        # name, capacity and is_active may be left out, but not set to null.
+        for field in ("name", "capacity", "is_active"):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self
 
 
 class RoomOut(BaseModel):
