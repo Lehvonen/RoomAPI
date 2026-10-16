@@ -98,4 +98,6 @@ sdd/
 
 ## Complexity Tracking
 
-None. The Constitution Check has no violations.
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| Test-First (II): the foundation modules (`timerules.py`, `security.py`, `schemas.py`) landed in group A (#16) before their tests (T019 and the story tests). | A test needs the app factory, database and harness to exist. The foundation is that harness, and it has no behaviour a user can reach yet. | Writing the foundation tests first would mean building a second throwaway harness. Every user-reachable behaviour is still test-first: each story pull request commits its failing tests before its implementation. |
