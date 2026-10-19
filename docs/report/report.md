@@ -1,21 +1,29 @@
 # An Experience Report on a Specification-Driven, AI-Assisted Software Construction Project
 
-## Team Details (Team TODO: team number/name)
+## Team Details
 
 | Student Name | Student ID | Role in the project | Contribution (%) |
 |---|---|---|---|
-| Ivar Lehvonen | 2202699 | Prompt Engineer | TODO |
-| Kristoffer Elfving-Millan | 2201244 | Code Auditor | TODO |
+| Ivar Lehvonen | 2202699 | Prompt Engineer | 50% |
+| Kristoffer Elfving-Millan | 2201244 | Code Auditor | 50% |
 
 ## Executive Summary
 
-<!-- 200–300 words. Must clearly state:
-1. The system built
-2. The specific formal/semi-formal specification techniques used
-3. The AI models/tools leveraged
-4. The SDD workflow used in the project
-5. The SDD tool used (Spec Kit)
-6. The verification and validation method used to ensure the AI-generated code implements the specifications -->
+Our system is a RoomAPI, a REST API for booking meeting/study rooms like what we have in Aurum, although we do not have any rooms to actually book.
+We buit the API twice, first version was a fully vibecoded version where even the AI wrote the prompts, we wanted to fully embody the vibe coding aspect.
+The second version was done with Specification-Driven Development (SDD).
+
+For the SDD version we used GitHub Spec Kit together with Claude Code, and the AI model behind both versions was Claude Opus 5.5 on medium effort.
+Spec Kit gave us a fixed workflow to follow: constitution, specify, clarify, plan, tasks and implement.
+The specification was written as user stories with Given/When/Then acceptance scenarios, 17 numbered functional requirements, 9 non-functional requirements, a data model and an API contract.
+The clarify step was where we actually had to make decisions, things like how far ahead you can book and what happens after too many failed logins.
+The implementation was then split into 37 tasks, which we merged in six pull requests.
+
+To check that the AI-generated code really does what the spec says, every requirement is mapped to at least one test in a traceability matrix.
+The SDD version passes all 186 tests with 94.8% code coverage, and we also broke the code on purpose in two places to make sure the tests notice it.
+Finally we ran the same tests against both versions. The SDD version passed 155 out of 155 and the vibe version 114 (out of the 166 tests only 155 of them could run over HTTP against both, the other 11 need the test database witch the vibecoded version does not have).
+None of the vibe version's failures were crashes; it simply made its own choices where our spec had decided something else.
+
 
 ## 1. Introduction & Paradigm Shift (3 Points)
 
