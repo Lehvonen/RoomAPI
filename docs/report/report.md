@@ -21,17 +21,55 @@
 
 ### 1.1 Project Overview & Objectives
 
-<!-- Overview of the project and the solution intended to be built. -->
+The idea was to build the same system twice, once by vibe coding and once with Specification-Driven Development (SDD), and then compare the two.
+
+The system we chose is RoomAPI, a REST API for booking meeting/study rooms.
+Users can register, log in, see the list of rooms, check when a room is free, book it, and see and cancel their own bookings.
+Admins can create, edit and deactivate rooms and cancel any booking.
+The most important rule is that two bookings for the same room can never overlap.
+
+We kept the scope to the API only, so there is no front end and nothing is hosted. Both versions are written in Python with FastAPI and SQLite.
+
+Our objectives were to get a working API out of both methods, to keep the comparison fair by giving both versions the same features and running the same tests on both, and to be able to trace every requirement to a test.
+We also wanted every prompt logged in Git, so that anyone can see what the AI was asked and what it produced (docs\sdd\prompt-log.md, docs\vibe\prompt-log.md).
+
 
 ### 1.2 The Vibe Coding
 
-<!-- What vibe coding is and how the team approached development using vibe coding. -->
+Our approach to the vibecoded version was to atleast try to have the same functional features as we would have in the SSD version so that they could be compared to each other.
+We used Claude Code with Opus 5.5 on medium effort, working only in vibe/.
+
+#### Round 1
+The first promt was written by us. The prompt was a short feature list with no rules or limits, except for the vibe/ constraint. We wanted to show and also see for our self the choices that the AI would make. 
+After that we probed the API and found 4 bugs and 5 rules the agent had chosen without asking.
+
+#### Round 2
+The problems were described as plain symptoms, without saying how to fix them. We decided to have another agent write the prompts to a fresh agent that we read and approved.
+No AI generated promt was edited for the vibe version, because we wanted to see how capable the AI realy was. In retrospect it would have been interesting to experiment with different models and effort levels.
+
+After Round 2 we frozze vibe/ at b68a979 to serve as the baseline. The full prompts, outputs and iteration log are in the vibe prompt log (docs\vibe\prompt-log.md).
 
 ### 1.3 The SDD Methodology
 
-<!-- Introduce SDD and how the team approached it. Which tool was used and why.
-Project specifications and scope, summary of the development timeline,
-optionally the workflow of the project (both vibe coding and SDD). -->
+#### Tool
+
+For the SDD version we used GitHub Spec Kit together with Claude Code, with the same model and effort level as the vibe version, Opus 5.5 on medium effort.
+Spec Kit was the tool named for the course, and it works directly inside Claude Code, which we were already using.
+Keeping the same agent and model also made the comparison fairer, since the only thing that changed was the method.
+
+#### Approach
+
+We started by writing a constitution with five principles: Specification First, Test-First, Secure by Default, Explicit Time Handling and Simplicity (sdd.specify\memory\constitution.md).
+After that we followed the Spec Kit steps: specify, clarify, plan, tasks and implement.
+The clarify step was the biggest difference to the vibe version. This time we decided the rules ourselves instead of letting the AI pick them. For example, bookings are only allowed 08:00–18:00, at most 4 hours long, and can't be edited.
+The specification ended up with 17 functional and 9 non-functional requirements, which are described in section 2 (sdd\specs\001-room-booking-api\spec.md).
+
+#### Timeline
+
+On 13 October we set up the repository and ran the first vibe round.
+On 16 October we probed the vibe API, ran round 2 and froze it. The same day we wrote the whole SDD specification, from constitution to tasks, and implemented the 37 tasks in six pull requests.
+The specification itself took around ten minutes, which surprised us. In retrospect we should have spent more time reading what the AI produced before moving on to the next step.
+This fast timeline was requiered due to group members different schedules and time left over from work and other courses.
 
 ## 2. Requirements & System Specification (6 points)
 
