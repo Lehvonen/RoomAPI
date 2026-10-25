@@ -5,7 +5,7 @@
 | Student Name | Student ID | Role in the project | Contribution (%) |
 |---|---|---|---|
 | Ivar Lehvonen | 2202699 | Prompt Engineer | 50% |
-| Kristoffer Elfving-Millan | 2201244 | Code Auditor | 50% |
+| Kristoffer Elfving-Milan | 2201244 | Code Auditor | 50% |
 
 ## Executive Summary
 
@@ -81,34 +81,203 @@ This fast timeline was requiered due to group members different schedules and ti
 
 ## 2. Requirements & System Specification (6 points)
 
-<!-- The "source of truth" constructed to feed into the AI. Most critical section. -->
-
 ### 2.1 Stakeholders
 
-<!-- The stakeholders and why they were chosen. -->
+The specification is the source of truth we gave the AI agent, so it starts with the people the system serves. We asked Spec Kit's specify step to list the stakeholders and why each one matters, because its template has no stakeholder section of its own.
+
+| Stakeholder | Interest | Why they matter |
+|---|---|---|
+| Employee (regular user) | Find a free room and book it quickly; trust that a booking holds | The main users. Most requirements serve their booking flow. |
+| Administrator (facility manager) | Keep the room list accurate; resolve conflicts by cancelling bookings | Owns the room data. A wrong room list makes every booking wrong. |
+| Operator (IT) | Run the service, create the first admin account, keep data safe | Holds the only route to admin rights, and is responsible for stored passwords. |
+| Client developer | Build a front end or integration on the API | Depends on a stable, documented interface and clear errors. |
+| Development team and course staff | Show that the system meets its specification | The project's evidence: every requirement must be traceable to a test. |
+
+We chose these five groups because together they cover everyone who uses the API (employees and administrators), runs it (the operator), builds on it (client developers) or has to show that it works (our team and the course staff). Each group adds requirements the others would miss: employees drive the booking rules, administrators the room management, the operator the admin and password handling, client developers the documented interface and clear errors, and the course staff the traceability from every requirement to a test.
 
 ### 2.2 Functional Requirements
 
-<!-- What functional requirements are, then this project's functional requirements. -->
+A functional requirement states what the system must do: a behaviour a user can trigger and observe, such as registering, booking a room or cancelling a booking. Each of ours is numbered (FR-001 to FR-017), written with MUST so it can be checked, and has acceptance criteria that later became automated tests. They are grouped by area: accounts, rooms, availability, bookings and time.
+
+**Accounts**
+
+- **FR-001**: The system MUST let anyone register an account with a username and a password. Usernames are 3–50 characters from letters, digits, `_`, `.` and `-`, and are unique regardless of letter case.
+  *Acceptance*: User Story 1, scenarios 1–2.
+- **FR-002**: The system MUST require passwords of 10–128 characters.
+  *Acceptance*: a 9-character password is refused; a 10-character password is accepted.
+- **FR-003**: The system MUST let a registered user log in with username and password and receive an access token that expires after 60 minutes. There is no logout: a token stays valid until it expires.
+  *Acceptance*: User Story 1, scenario 3; a token older than 60 minutes is refused.
+- **FR-004**: The system MUST give the same refusal for a wrong password and for an unknown username.
+  *Acceptance*: User Story 1, scenario 4.
+- **FR-005**: The system MUST let a logged-in user see their own profile (username, admin or not) and MUST NOT return any password data.
+  *Acceptance*: the profile response has no password field.
+- **FR-006**: Admin accounts MUST only be created by the operator, outside the public interface. Registration MUST always create regular users.
+  *Acceptance*: a registration request that asks for admin rights creates a regular user.
+
+**Rooms**
+
+- **FR-007**: The system MUST let any logged-in user list active rooms with name, capacity and location, and look up a single active room.
+  *Acceptance*: User Story 3, scenario 1.
+- **FR-008**: The system MUST let admins create rooms (unique name regardless of case, capacity at least 1, optional location and description) and edit any of these fields.
+  *Acceptance*: User Story 5, scenarios 1–2.
+- **FR-009**: The system MUST let admins deactivate and reactivate a room. Inactive rooms MUST NOT be listed to regular users and MUST NOT accept new bookings. Deactivation MUST be refused while the room has active bookings that have not ended; the refusal says how many there are. The admin cancels them first (FR-015), so every cancellation records who made it.
+  *Acceptance*: User Story 5, scenario 3; a room with one future booking cannot be deactivated until that booking is cancelled.
+
+**Availability**
+
+- **FR-010**: The system MUST let a logged-in user see, for one active room and one calendar date in Helsinki time, the booked and free intervals within that day's opening hours (08:00–18:00, FR-012), returned in UTC. Free intervals are exactly the times that can still be booked.
+  *Acceptance*: User Story 3, scenario 2; for a day with one booking 10:00–11:00 Helsinki time, the free intervals are 08:00–10:00 and 11:00–18:00, given in UTC.
+
+**Bookings**
+
+- **FR-011**: The system MUST let a logged-in user book an active room for a time range whose end is after its start, whose start is not in the past, and whose start is at most 90 days from now.
+  *Acceptance*: User Story 2, scenarios 1 and 4; a booking starting 91 days ahead is refused.
+- **FR-012**: A booking MUST start and end within opening hours, 08:00–18:00 in the organisation's time zone (Europe/Helsinki), on the same calendar day, and MUST last at most 4 hours.
+  *Acceptance*: in Helsinki time, 08:00–12:00 is accepted; 07:30–08:30, 17:00–18:30, 09:00–13:30 and 17:00 to 09:00 the next day are refused, each with a message naming the rule.
+- **FR-013**: The system MUST never accept two active bookings for the same room whose time ranges overlap. Ranges include their start and exclude their end, so back-to-back bookings are allowed. This MUST hold for simultaneous requests.
+  *Acceptance*: User Story 2, scenarios 2, 3 and 5.
+- **FR-014**: The system MUST let a logged-in user list their own upcoming bookings, oldest first.
+  *Acceptance*: User Story 4, scenario 1.
+- **FR-015**: The system MUST let users cancel their own bookings that have not ended, and let admins cancel any booking. Cancelled bookings MUST be kept with their status, the time of cancellation and who cancelled them, and MUST free their slot. Cancelling someone else's booking as a regular user MUST be refused.
+  *Acceptance*: User Story 4, scenarios 2–3; User Story 5, scenario 4.
+- **FR-016**: Bookings MUST NOT be editable. To change a booking, the user cancels it and books again.
+  *Acceptance*: no operation changes the room, start or end of an existing booking.
+
+**Time**
+
+- **FR-017**: Every time sent to the system MUST include a timezone offset; times without one MUST be rejected. Every time returned MUST be in UTC.
+  *Acceptance*: `2026-10-20T09:00` is rejected; `2026-10-20T09:00+03:00` is accepted and returned as `2026-10-20T06:00Z`.
 
 ### 2.3 Non-Functional Requirements
 
-<!-- What non-functional requirements are, then this project's (performance, security, usability, reliability constraints). -->
+A non-functional requirement states how well the system must work and under which limits, rather than what it does: its security, reliability, performance and usability. These are the areas where our vibe-coded version went wrong without anyone noticing (server errors on bad input, unlimited login attempts, times read in the wrong time zone), so we asked for them explicitly and gave each one measurable acceptance criteria (NFR-001 to NFR-009).
+
+
+**Security**
+
+- **NFR-001**: Passwords MUST be stored only as salted hashes from a slow, purpose-built password hashing algorithm, and MUST never be returned or written to logs.
+  *Acceptance*: the stored value is not the password and differs between two users with the same password; no response or log line contains a password.
+- **NFR-002**: Every operation except registration, login and a health check MUST require a valid access token.
+  *Acceptance*: each protected operation refuses a missing, expired or tampered token.
+- **NFR-003**: Every operation on a specific resource MUST check that the caller is allowed to act on it: their own booking, or any booking or room for admins.
+  *Acceptance*: User Story 4, scenario 3; User Story 5, scenario 5.
+- **NFR-009**: After 5 failed logins for one username within 15 minutes, each further login attempt for that username MUST be answered only after a 2-second delay, whether the password is right or not. Accounts are never locked, so nobody can lock another user out.
+  *Acceptance*: the 6th attempt within 15 minutes takes at least 2 seconds; a correct password after 10 failures still logs in.
+
+**Reliability**
+
+- **NFR-004**: No client input may cause a server error. Every invalid request MUST get a client error with a message that says what is wrong.
+  *Acceptance*: a test set of invalid inputs (huge IDs, out-of-range dates, malformed values, missing fields) produces zero server errors.
+- **NFR-005**: Overlap protection (FR-013) MUST hold when booking requests for the same slot arrive at the same time.
+  *Acceptance*: User Story 2, scenario 5, run with at least 20 simultaneous requests.
+
+**Performance**
+
+- **NFR-006**: On a developer laptop with 1,000 bookings stored, each request MUST complete in under 500 ms. Login attempts that NFR-009 deliberately delays are exempt.
+  *Acceptance*: a timed test of every operation stays under 500 ms.
+
+**Usability**
+
+- **NFR-007**: The interface MUST be self-documenting: an interactive description of every operation, its inputs and its possible errors is available while the system runs.
+  *Acceptance*: every operation and error response appears in the generated interface description.
+- **NFR-008**: Error messages MUST be in plain English and name the field or rule that failed.
+  *Acceptance*: each refusal in the acceptance scenarios carries such a message.
 
 ### 2.4 Technology Stack
 
-<!-- The stack and the reasons for choosing it. -->
+The constitution fixed the main stack before any requirement was written, so the plan could not drift from it. The plan step then picked the remaining libraries, and its research notes (`sdd/specs/001-room-booking-api/research.md`, R1–R8) record each decision with the alternatives considered.
 
-AI Generation & Orchestration Tools: TODO
+| Part | Choice | Why |
+|---|---|---|
+| Language | Python 3.11+ (3.12 used locally) | Familiar to both of us, and well supported by the AI agent and the libraries below. |
+| Web framework | FastAPI with Pydantic v2 | Generates the OpenAPI description and interactive docs automatically (NFR-007). Pydantic validates every input and rejects times without an offset (FR-017, NFR-004). The vibe version also used FastAPI, so the comparison is about the process, not the framework. |
+| Database | SQLite through SQLAlchemy 2 | One file and no other services (constitution principle V). A `BEGIN IMMEDIATE` transaction takes the write lock before the overlap check, so two simultaneous requests can't both book the same slot (FR-013, NFR-005). |
+| Passwords | Argon2id (`argon2-cffi`) | The current OWASP recommendation; salts each hash (NFR-001). Bcrypt was rejected because it only uses the first 72 bytes and we allow passwords up to 128 characters. |
+| Access tokens | JWT, HS256, 60 minutes (PyJWT) | Stateless and standard, and FastAPI's login flow gives the interactive docs a working "Authorize" button (FR-003, NFR-002). |
+| Time zones | `zoneinfo` with `tzdata` | Opening hours are checked in Europe/Helsinki local time, which handles the summer and winter time changes automatically (FR-012). `tzdata` supplies the zone data on Windows. |
+| Tests | pytest, pytest-cov, httpx | Black-box HTTP tests that run either in-process (with coverage) or against any running server, so the same suite could also test the vibe version (research R7). |
+| Project management | uv (`pyproject.toml`, `uv.lock`) | One command installs the exact same versions locally and in CI. |
+| CI | GitHub Actions | Runs the tests with the 80% coverage gate on every pull request. |
+
+The system runs locally on one machine and in CI; nothing is deployed. It is sized for one organisation: tens of rooms, hundreds of users and thousands of bookings.
+
+AI Generation & Orchestration Tools: Claude Code with the Claude Opus 5.5 model (`claude-opus-5-5`) as the coding agent, driven by Spec Kit 1.1.4.dev0 through its Claude Code integration. Spec Kit's slash commands (`/speckit-constitution`, `/speckit-specify`, `/speckit-clarify`, `/speckit-plan`, `/speckit-tasks`, `/speckit-implement`) orchestrated the work from specification to code.
 
 ### 2.5 Interface & API Specifications
 
-<!-- The API the system exposes: endpoints, methods, who may call them, request and response schemas, status codes.
-The exported OpenAPI spec goes in docs/. -->
+The API contract was written in the plan step (`sdd/specs/001-room-booking-api/contracts/api.md`) before any code, and every endpoint names the requirements it serves. The running app generates the full machine-readable description at `/openapi.json`, and an interactive version, where every endpoint can be tried, at `/docs`. We exported it to [`docs/openapi.json`](../openapi.json). A test checks that every endpoint and its error responses appear in it, and that there are no undocumented endpoints (NFR-007).
+
+The API uses HTTP and JSON. Every endpoint except register, login and health needs `Authorization: Bearer <token>` (NFR-002).
+
+#### Conventions
+
+- **Times**: ISO 8601 with an offset. Input without an offset → 422 (FR-017). Output is always UTC with `Z`, e.g. `2026-10-20T06:00:00Z`.
+- **IDs**: integers 1 … 2^63−1. Outside that range → 422 (NFR-004).
+- **Errors**: `{"detail": "<plain English message>"}`. Validation errors use FastAPI's list form, naming each failing field (NFR-008).
+
+| Status | Meaning |
+|---|---|
+| 401 | missing, expired or invalid token; wrong login |
+| 403 | logged in, but not allowed (not an admin, or not the booking's owner) |
+| 404 | the resource doesn't exist, or the room is inactive (for regular users) |
+| 409 | conflict: name taken, overlap, already cancelled, booking ended, room has bookings |
+| 422 | invalid input or a broken booking rule |
+
+#### Endpoints
+
+| Method | Path | Who | Body / query | Success | Errors | Requirements |
+|---|---|---|---|---|---|---|
+| GET | `/health` | anyone | | 200 `{"status":"ok"}` | | NFR-002 (the unauthenticated health check) |
+| POST | `/auth/register` | anyone | JSON `{username, password}` | 201 User | 409 name taken, 422 | FR-001, FR-002, FR-006 |
+| POST | `/auth/login` | anyone | **form** `username`, `password` | 200 `{access_token, token_type:"bearer"}` | 401 | FR-003, FR-004, NFR-009 |
+| GET | `/users/me` | user | | 200 User | 401 | FR-005 |
+| GET | `/rooms` | user | | 200 [Room], active only, by name | 401 | FR-007 |
+| GET | `/rooms/{room_id}` | user | | 200 Room | 404 (missing, or inactive for non-admins) | FR-007 |
+| POST | `/rooms` | admin | JSON `{name, capacity, location?, description?}` | 201 Room | 403, 409 name taken, 422 | FR-008 |
+| PATCH | `/rooms/{room_id}` | admin | JSON, any of `{name, capacity, location, description, is_active}` | 200 Room | 403, 404, 409 name taken or room has active bookings, 422 | FR-008, FR-009 |
+| GET | `/rooms/{room_id}/availability` | user | query `date=YYYY-MM-DD` (Helsinki date) | 200 Availability | 404, 422 | FR-010 |
+| POST | `/bookings` | user | JSON `{room_id, start_time, end_time}` | 201 Booking | 404 room, 409 overlap, 422 rule broken | FR-011, FR-012, FR-013, FR-017 |
+| GET | `/bookings/me` | user | | 200 [Booking], own active bookings that haven't ended, oldest first | 401 | FR-014 |
+| DELETE | `/bookings/{booking_id}` | owner or admin | | 204 | 403 not owner, 404, 409 already cancelled or ended (non-admin) | FR-015 |
+
+There is no endpoint to edit a booking (FR-016) and none for logout (clarification 4).
+
+#### Shapes
+
+- **User**: `{id, username, is_admin, created_at}`. Never a password or hash (FR-005, NFR-001).
+- **Room**: `{id, name, capacity, location, description, is_active, created_at, updated_at}`
+- **Booking**: `{id, room_id, room_name, user_id, start_time, end_time, status, created_at, cancelled_at, cancelled_by}`
+- **Availability**: `{room_id, date, opens_at, closes_at, booked: [{start, end}], free: [{start, end}]}`. All times are UTC; `opens_at` and `closes_at` are that date's 08:00 and 18:00 in Helsinki.
 
 ### 2.6 How these requirements and specifications were created (using SDD AI tools)
 
-<!-- How the SDD AI tools (Spec Kit + coding agent) were used to produce the requirements and specifications above. -->
+We created the requirements and specifications with Spec Kit and Claude Code in four steps, all on 2026-10-16. Every step produced a Markdown file, and we reviewed all of them together in one pull request (#22) before any code was written.
+
+1. **Constitution** (`/speckit-constitution`): the project's fixed rules, before any requirement existed: specification first, tests first, secure by default, explicit time handling and simplicity. The first four each answer a problem we had found in the vibe version.
+2. **Specify** (`/speckit-specify`): the prompt below. It asked for the same features as the vibe version, so the two could be compared, and explicitly for stakeholders and numbered NFRs, which Spec Kit's template doesn't include. It also deliberately named the booking rules we had not decided yet as open questions, so that we decided them instead of the agent. The agent produced the stakeholders, five user stories, FR-001 to FR-017, NFR-001 to NFR-008, success criteria, and three open questions. We answered those: opening hours 08:00–18:00 Helsinki time with a 4-hour maximum, deactivation refused while future bookings exist, and bookings cancelled and rebooked rather than edited.
+3. **Clarify** (`/speckit-clarify`): the agent scanned the spec for remaining ambiguities, with extra attention to security, reliability and the availability rules. It asked four questions, which we answered (see 4.3). One answer added NFR-009, the login slow-down. The step also exposed a conflict between NFR-006's 500 ms limit and NFR-009's deliberate 2-second delay, which we fixed in the spec before planning.
+4. **Plan** (`/speckit-plan`): the technical design: the stack in 2.4, the research decisions, the data model and the API contract in 2.5.
+
+The split of work was clear: the AI drafted the documents, and we made every decision the spec left open and approved every change. The vibe version shows the difference. There, the agent chose the opening hours, the booking length, the lockout rules and the time zone format itself, without asking (see 7.3).
+
+> **Note:** The prompt log ([`docs/sdd/prompt-log.md`](../sdd/prompt-log.md)) says that Ivar Lehvonen answered the open questions from specify and the clarify questions. In reality we answered them together. We worked through Ivar Lehvonen's Claude account, so the AI-written logs give the credit to the account holder alone.
+
+The specify prompt (verbatim):
+
+
+```text
+/speckit-specify A room booking API for a small organisation's meeting rooms. Same features as our vibe-coded baseline, so the two versions can be compared:
+
+- People register an account and log in.
+- Logged-in users list the active rooms, check when a room is free on a given day, book a room for a time range, see their own upcoming bookings and cancel their own bookings.
+- Admins create rooms, edit them, deactivate them, and cancel any booking.
+
+Two bookings for the same room must never overlap.
+
+Also list the stakeholders and why each one matters, and add numbered non-functional requirements (NFR-xx) for security, reliability, performance and usability next to the functional requirements (FR-xx). Every requirement needs acceptance criteria.
+
+Leave the booking rules we have not decided yet as open questions for clarify: opening hours and maximum booking length, whether bookings can be edited, and what happens to bookings when a room is deactivated.
+```
 
 ## 3. Vibe coding and your project (5 pts)
 
