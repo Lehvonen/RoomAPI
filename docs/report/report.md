@@ -233,24 +233,140 @@ To get the result we actually wanted, the prompt would have needed the decisions
 
 ### 4.1 SDD Tool-kit
 
-<!-- The toolkit (Spec Kit) and the reason for choosing it. -->
+We used GitHub's Spec Kit (version 1.1.4.dev0) as our SDD toolkit. Spec Kit adds a set of slash commands to a coding agent, one per step of the workflow:
+
+| Command | What it produces |
+|---|---|
+| `/speckit-constitution` | `constitution.md`: the project's non-negotiable rules |
+| `/speckit-specify` | `spec.md`: stakeholders, user stories, numbered requirements and acceptance criteria |
+| `/speckit-clarify` | Questions about anything still ambiguous; the answers are written back into `spec.md` |
+| `/speckit-plan` | `plan.md`, `research.md`, `data-model.md`, the API contract and `quickstart.md` |
+| `/speckit-tasks` | `tasks.md`: ordered, numbered tasks grouped by user story |
+| `/speckit-implement` | The code, built task by task, with each task marked done |
+
+We chose Spec Kit for three reasons:
+
+- **It works inside the agent we already used.** Spec Kit has a Claude Code integration, so we could use the same agent and model as in the vibe version. That keeps the comparison fair: the difference between the two versions is the process, not the tool.
+- **Every step leaves a file.** The constitution, spec, plan and tasks are Markdown files in the repository. We reviewed them in pull requests like code, and they stay as evidence of what was decided and when.
+- **It has a clarify step.** In the vibe version the agent filled every gap in the prompt with its own choices. Spec Kit's clarify step makes the agent ask instead, so we make those decisions.
+
+Spec Kit's templates are general, so we adapted them through our prompts. The spec template has no stakeholder section or numbered non-functional requirements, so the specify prompt asked for both. Spec Kit treats tests as optional, so the constitution and the tasks prompt made tests-first mandatory.
 
 ### 4.2 Development Environment
 
-<!-- System environment and IDE/coding agents used, and why. -->
+| Part | What we used | Why |
+|---|---|---|
+| Operating system | Windows 11 | Our own desktop PCs. The plan also targets macOS and Linux, and CI runs on Ubuntu, so the code doesn't depend on Windows. |
+| Editor | VS Code | Opens the Markdown specs and Python code side by side, and Claude Code integrates with it. |
+| Coding agent | Claude Code with Claude Opus 5.5 (`claude-opus-5-5`) | Runs the Spec Kit commands, reads and edits the repository, and runs the tests itself, so it can check its own work. The same agent and model built the vibe version. |
+| SDD toolkit | Spec Kit 1.1.4.dev0, installed into `sdd/` | See 4.1. Its commands and templates live in `sdd/.claude/` and `sdd/.specify/`. |
+| Python and packages | Python 3.12, managed with uv | `uv sync --locked` installs the exact versions from `uv.lock`, so our machines and CI run the same code. |
+| Version control | Git and GitHub | Every change went through a branch, a pull request linked to an issue, a review and a merge (see section 6). |
+| CI | GitHub Actions (`.github/workflows/sdd-tests.yml`) | Runs the whole test suite with coverage on every pull request and every push to `main`, and fails below 80% coverage, so a failing test shows on the pull request before it is merged. |
+
+The vibe version (`vibe/`) and the SDD version (`sdd/`) live side by side in one repository, each with its own dependencies. This let us run the same acceptance tests against both.
 
 ### 4.3 Deriving the requirements using the IDE/coding agents
 
-<!-- How FRs and NFRs were derived with the toolkit and IDE, including the prompts. Possible activities:
-SRS, system constraints, interfaces, acceptance criteria, compliance requirements. -->
+We derived the requirements in two steps with Claude Code and Spec Kit, and reviewed the result before any design work started.
+
+**1. Specify.** The specify prompt (quoted in 2.6) gave the agent the same feature list as our vibe prompt, plus three instructions of our own: list the stakeholders, add numbered NFRs for security, reliability, performance and usability, and leave the rules we hadn't decided as open questions. The agent turned this into five prioritised user stories, each with acceptance scenarios in Given/When/Then form, and derived the numbered requirements from them: FR-001 to FR-017 and NFR-001 to NFR-008. It marked three rules `[NEEDS CLARIFICATION]`: opening hours and maximum length, editing bookings, and deactivating rooms with bookings. We answered those. Spec Kit's quality checklist (`checklists/requirements.md`) scored the spec 14/16 until the answers were in.
+
+**2. Clarify.** The clarify prompt pointed the agent at the areas where the vibe version had failed:
+
+```text
+/speckit-clarify Check the spec for anything still ambiguous, with extra attention to security and reliability (login abuse, tokens, input limits) and to the availability rules now that opening hours exist.
+```
+
+The agent asked four questions, each with a recommended answer. We chose the answers below, and the agent wrote each one back into the spec. The checklist then scored 16/16.
+
+- Q: Should the system limit repeated failed logins? → A: Slow down, never lock: after 5 failures for a username within 15 minutes, each further attempt for it waits 2 seconds first.
+- Q: How far ahead can a booking be made? → A: The start must be within 90 days from now.
+- Q: When a user asks for a room's availability on a date, which hours does the answer cover? → A: The date is a Helsinki calendar date, and the answer covers that day's opening hours, 08:00–18:00.
+- Q: Do users need to log out, ending a token before its 60 minutes are up? → A: No. There is no logout; tokens are valid until they expire.
+
+The first answer created a new requirement, NFR-009 (slow down repeated failed logins, never lock the account). It also exposed a conflict: NFR-006 says every request finishes within 500 ms, but NFR-009 deliberately waits 2 seconds. We fixed this in the spec, by exempting delayed logins from NFR-006, before planning started.
+
+> **Note:** As in 2.6, the prompt log credits these answers to Ivar Lehvonen alone because we worked through Ivar Lehvonen's Claude account. We decided them together.
+
+The template lists several activities for this step. This is how each one was covered:
+
+| Activity | Where it is | How it was produced |
+|---|---|---|
+| Software requirements specification | `sdd/specs/001-room-booking-api/spec.md` | Specify, then clarify |
+| System constraints | FR-012 (08:00–18:00, at most 4 hours), FR-011 (at most 90 days ahead), FR-002 (password length), and the constitution (no other services, Python 3.11+) | Our answers to the open and clarify questions; the constitution |
+| Interfaces | `contracts/api.md` and `docs/openapi.json` (see 2.5) | Plan step, from the requirements |
+| Acceptance criteria | One under every FR and NFR, plus the user stories' scenarios and five measurable success criteria (SC-001 to SC-005) | Specify; checked by Spec Kit's quality checklist |
+| Compliance requirements | The constitution's five principles, checked by the plan's "Constitution Check" before and after design | Constitution step; plan step |
 
 ### 4.4 SDD Workflow and Implementation
 
-<!-- Which workflow was used. Any existing workflow can be adopted, or propose the team's own. -->
+We used Spec Kit's own workflow and added two rules from our constitution: tests are written and committed before the code, and every change goes through a reviewed pull request.
+
+```text
+constitution → specify → clarify → plan → tasks → (for each issue group: failing tests → implementation → review and merge)
+```
+
+**Specification (PR #22).** Constitution, specify, clarify, plan and tasks ran in one branch. The tasks step produced 37 numbered tasks in eight phases (`tasks.md`), and grouped them into six issues, so that each group became one reviewable pull request:
+
+| Group | Issue | Tasks | Covers |
+|---|---|---|---|
+| A. Project setup and foundation | #16 | T001–T013 | constitution, NFR-002 base |
+| B. Accounts | #17 | T014–T016 | US1, FR-001–FR-006 |
+| C. Bookings | #18 | T017–T020 | US2, FR-011–FR-013, FR-017, NFR-005 |
+| D. Rooms, availability and my bookings | #19 | T021–T026 | US3, US4, FR-007, FR-010, FR-014–FR-016 |
+| E. Admin | #20 | T027–T028 | US5, FR-008, FR-009, NFR-003 |
+| F. NFRs, traceability, docs | #21 | T029–T037 | NFR-001, NFR-004, NFR-006, NFR-007, NFR-009, SC-001–SC-005 |
+
+**Implementation (PRs #23–#28).** Each group was built with one `/speckit-implement` prompt that named only that group's tasks and ended with "do not continue after T0xx", so the agent couldn't run ahead. Every story followed the same order:
+
+1. The agent wrote the acceptance tests from the spec's scenarios and ran them.
+2. The tests were committed while they still failed, so the Git history shows they came first.
+3. The agent implemented the tasks until all tests passed, and marked the tasks done in `tasks.md`.
+4. The pull request was reviewed with the help of an AI (Claude Code), CI ran the full suite, and we merged it.
+
+| PR | Group | Tests failing when committed | All tests passing after | Coverage after |
+|---|---|---|---|---|
+| #23 | A. Setup and foundation | — (no stories yet; one health smoke test) | 1 | 40% |
+| #24 | B. Accounts | 23 | 24 | 74% |
+| #25 | C. Bookings | 24 | 68 | 92% |
+| #26 | D. Rooms, availability, my bookings | 31 | 100 | 93% |
+| #27 | E. Admin | 25 | 125 | 95% |
+| #28 | F. NFRs and evidence | 3 (of 61 new) | 186 | 94.83% |
+
+**Reviews fed the next prompt.** What we found in one review went into the next group's prompt:
+
+- The review of #23 found that failed-login usernames were stored as typed. Group B's prompt added "lower-case and limit to 50 characters the username stored in failed_logins".
+- The review of #24 found that a successful login should clear earlier failures. Group F's prompt added it to the slow-down.
+- The review of #26 found that admin cancelling was implemented but untested. Group E's prompt asked for tests of an admin cancelling any user's booking and an ended booking.
+
+**Where the workflow needed correcting.** Three things didn't go as planned, and each was fixed in the process rather than patched afterwards:
+
+- The generated task list put the 80% coverage gate in the first group, which would have failed CI on every pull request until the last one. We moved it to group F before any code was written.
+- In groups C and D, some "not found" tests passed before the endpoint existed, because FastAPI also answers 404 for a missing route. The tests now check the error message too, so they fail until the real endpoint exists.
+- In group F, 58 of the 61 new NFR tests passed immediately, because the earlier stories had already built those properties in (bounded IDs, the 90-day check, documented errors). Only the login slow-down was truly test-first there. Mutation checks showed that the tests still catch the faults they guard against (see 5.1).
 
 ### 4.5 Prompts
 
-<!-- Same as 3.2, for SDD (source: docs/sdd/prompt-log.md). -->
+All 11 SDD prompts were run with Spec Kit 1.1.4.dev0 through Claude Code (`claude-opus-5-5`) on 2026-10-16. The full log, with each prompt verbatim and its purpose, reasoning, expected result, what came back, issues and refinements, is in [`docs/sdd/prompt-log.md`](../sdd/prompt-log.md).
+
+| # | Command | Purpose | What came back | Issues and refinements |
+|---|---|---|---|---|
+| 1 | `/speckit-constitution` | Fix the non-negotiable rules before any spec exists | Constitution v1.0.0: five principles (Specification First, Test-First, Secure by Default, Explicit Time Handling, Simplicity) | None |
+| 2 | `/speckit-specify` | Turn the vibe feature list into numbered, testable requirements | 5 stakeholders, 5 user stories, FR-001–FR-017, NFR-001–NFR-008, 3 open questions | The open questions were answered by the team |
+| 3 | `/speckit-clarify` | Find remaining ambiguities before planning | 4 questions answered: login slow-down (new NFR-009), 90-day horizon, availability hours, no logout | Exposed a conflict between NFR-006 and NFR-009, fixed in the spec |
+| 4 | `/speckit-plan` | Fix the technical design | plan, research decisions R1–R8, data model, API contract, quickstart | None |
+| 5 | `/speckit-tasks` | Break the plan into ordered, test-first tasks | 37 tasks in 6 issue groups (A–F, issues #16–#21) | None |
+| 6 | `/speckit-implement` group A | Project setup and foundation (T001–T013) | All 13 tasks done; coverage 40% | Coverage gate moved to T035 so CI could pass from the start |
+| 7 | `/speckit-implement` group B | User Story 1, register and log in (T014–T016) | 23 tests committed failing, then all pass; coverage 74% | None |
+| 8 | `/speckit-implement` group C | User Story 2, book a room (T017–T020) | 68 tests pass; coverage 92%; mutation check proves the concurrency test | Two 404 tests first passed for the wrong reason; fixed to check the message |
+| 9 | `/speckit-implement` group D | User Stories 3 and 4 (T021–T026) | 100 tests pass; coverage 93% | Same wrong-reason 404 issue, fixed the same way |
+| 10 | `/speckit-implement` group E | User Story 5, admin (T027–T028) | 125 tests pass; coverage 95% | None |
+| 11 | `/speckit-implement` group F | NFRs, traceability, OpenAPI export, evidence runs (T029–T037) | 186 tests pass; coverage 94.83%; SDD 155/155 vs vibe 114/155 over HTTP | Most NFR tests passed before new code; the slow-down's first design would have blocked other requests |
+
+Prompts 1–9 were AI-drafted and edited and approved by both Ivar and Kristoffer (we edited the wording of 7–9 before running them). Prompts 10 and 11 were run by us in our own wording.
+
+> **Note:** The prompt log ([`docs/sdd/prompt-log.md`](../sdd/prompt-log.md)) says that Ivar Lehvonen approved, edited or ran these prompts. In reality we did this together. We worked through Ivar Lehvonen's Claude account, so the AI-written logs give the credit to the account holder alone.
 
 ## 5. Verification and Validation (6 pts)
 
