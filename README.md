@@ -8,8 +8,8 @@ once with Specification-Driven Development (GitHub Spec Kit).
 
 | Student Name | Student ID | GitHub | Role in the project | Contribution (%) |
 |---|---|---|---|---|
-| Ivar Lehvonen | 2202699 | @Lehvonen | Prompt Engineer | TODO |
-| Kristoffer Elfving-Millan | 2201244 | @iPonkko | Code Auditor | TODO |
+| Ivar Lehvonen | 2202699 | @Lehvonen | Prompt Engineer | 50% |
+| Kristoffer Elfving-Millan | 2201244 | @iPonkko | Code Auditor | 50% |
 
 ## Repository layout
 
@@ -20,7 +20,7 @@ once with Specification-Driven Development (GitHub Spec Kit).
 ## Running
 
 - Vibe-coded version: see [`vibe/README.md`](vibe/README.md)
-- SDD version: added once the implementation exists
+- SDD version: see [`sdd/README.md`](sdd/README.md)
 
 ## Report
 
