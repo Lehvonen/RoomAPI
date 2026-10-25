@@ -541,25 +541,211 @@ Prompts 1–9 were AI-drafted and edited and approved by both Ivar and Kristoffe
 
 ### 5.1 V&V Strategy
 
-<!-- How the code was verified (TDD with AI and/or human-in-the-loop), including threats to validity.
-Possible activities: unit, integration, functional testing, requirement verification, UAT, compliance testing. -->
+We verified the AI-generated code with test-driven development, a human in the loop and evidence that the tests themselves work. The AI wrote both the code and the tests, so we could not simply trust a green test run. Every layer below exists to check the layer before it.
+
+**1. Tests written from the specification, before the code.** For each user story the agent first wrote acceptance tests from the spec's acceptance criteria, ran them, and committed them while they failed. Only then did it write the implementation (see 4.4). This way the tests describe what the spec asks for, not what the code happens to do, and the Git history proves the order.
+
+**2. Test levels.**
+
+| Level | What | Where |
+|---|---|---|
+| Unit tests | The booking time rules on their own: opening hours, the 4-hour limit, the 90-day horizon, summer and winter time, out-of-range dates (19 tests) | `sdd/tests/unit/` |
+| Functional / acceptance tests | Every user story's scenarios through the HTTP API, black-box (one file per story) | `sdd/tests/acceptance/test_us*.py` |
+| Non-functional tests | Security, invalid input, simultaneous bookings, performance with 1,000 bookings, documentation, login slow-down | `sdd/tests/acceptance/test_nfr_*.py` |
+| Requirement verification | A traceability table that maps every FR, NFR and success criterion to the tests that cover it; none is left without a test | `sdd/specs/001-room-booking-api/traceability.md` |
+| Regression and coverage | GitHub Actions runs all tests on every pull request and fails below 80% coverage | `.github/workflows/sdd-tests.yml` |
+
+**3. AI-assisted review.** Every pull request was reviewed before merge. We used an AI (Claude Code) to conduct the code reviews: it checked out each pull request, ran the tests commit by commit, checked the tests against the spec and then the code, and tried extra edge cases. We read each review and decided whether to merge. What the reviews found went into the next prompt (see 4.4).
+
+**4. Checking the tests.** A test that passes may pass for the wrong reason. We used three checks:
+
+- **Mutation checks.** For the two most important tests we broke the code on purpose and checked that the tests failed (tables below).
+- **Failing first.** Tests had to fail before the code existed. This caught tests that passed for the wrong reason (see the audit log, 5.2).
+- **Testing the other version.** The acceptance tests are black-box, so we ran them unchanged against the vibe version too (5.3). They found real differences there, which shows they test behaviour rather than our implementation.
+
+**Threats to validity.**
+
+- **The same AI wrote the code and the tests.** Both come from one model reading one spec, so they can share a misunderstanding. Our review and the mutation checks reduce this risk but don't remove it.
+- **The tests are only as good as the spec.** Something the spec doesn't mention is not tested. The traceability table shows that every requirement is covered, not that the requirements are complete.
+- **11 tests can't run against an external server**, because they read or write the test database directly. They run in-process only, so the vibe comparison is based on 155 tests, not 186.
+- **The vibe comparison isn't purely about correctness.** 17 of vibe's 41 failures are interface differences (other paths or formats for the same feature), and 11 are missing documentation. Only the remaining 13 are behaviour the spec decided differently.
+- **Small scale.** Everything ran on one machine with SQLite and one process. The performance test (1,000 bookings) and the 20-request concurrency test say nothing about many servers or much larger data.
+- **Timing tests depend on the machine.** The performance and slow-down tests measure time, so a much slower or busier machine could give different results.
+- **No real users.** We did no user acceptance testing with real employees or administrators; the acceptance tests stand in for them.
+
+**Mutation checks.** The test `sdd/tests/acceptance/test_nfr_concurrency.py` catches double-booking. Without the `BEGIN IMMEDIATE` write lock (research R1), 20 simultaneous requests for one free slot created up to 10 bookings. With it, exactly 1.
+
+Run on 2026-10-16 on branch `feat/sdd-bookings` (#18). For the check, the line `connection.exec_driver_sql("BEGIN IMMEDIATE")` in `sdd/app/db.py` was temporarily replaced with `pass`, then restored with `git checkout -- app/db.py`. Nothing from the mutated version was committed.
+
+| Run | Write lock | Bookings created for the same slot | Test |
+|---|---|---|---|
+| 1 | removed | 10 | failed (`assert 10 == 1`) |
+| 2 | removed | 5 | failed (`assert 5 == 1`) |
+| 3 | removed | 7 | failed (`assert 7 == 1`) |
+| 4 | restored | 1 | passed |
+
+The login slow-down (NFR-009) was checked the same way, by breaking it in two ways, one at a time:
+
+| Mutation | What it breaks | Guard test | Result |
+|---|---|---|---|
+| Wait while the database transaction is still open | Every other request waits behind a delayed login, so an attacker could slow everyone (vibe's N1b, in another form) | `test_a_delayed_login_does_not_block_other_requests` | failed: "bystander waited 1.78s behind the delayed login" |
+| Don't clear failures after a successful login | The user stays slowed down after logging in correctly | `test_successful_login_clears_the_failures` | failed: next wrong attempt took 2.04 s (limit 1.0 s) |
+| None (restored) | — | all 6 slow-down tests | passed |
 
 ### 5.2 Code Audit Log
 
-<!-- Security, compliance and logical flaws caught in review; whether AI or AI+human found and fixed them; the technique used. -->
+We audited the code in three ways: a probe script that attacks the running API with chosen inputs (vibe rounds 1 and 2), code review of every pull request, and failing-first and mutation checks on the SDD tests. The first part of the table lists the flaws found in the vibe version and how the SDD version prevents each one. The second part lists the flaws found while building the SDD version itself.
 
 | Issue Found | Type (security / compliance / logic) | Found by (AI / AI+human) | Resolution |
 |---|---|---|---|
-| | | | |
+| **Vibe version** | | | |
+| A huge ID (2^70) in a path or body crashed the server with HTTP 500 (P4a, P4b) | Security (input validation) | AI + human: probe script written by the AI, results checked and re-run by us | SDD: NFR-004 requires a client error for every invalid input. IDs are limited to 1 … 2^63−1; tests `test_huge_room_id_gives_422`, `test_cancel_huge_id_gives_422` and others |
+| A booking near year 9999 overflowed and crashed the server (P5) | Security (input validation) | AI + human: probe script | SDD: the 90-day horizon is checked before any time conversion; test `test_year_9999_refused_without_overflow` |
+| Deactivating a room left its bookings active but unreachable (P3) | Logic | AI + human: probe script | SDD: FR-009 refuses deactivation while bookings exist; test `test_deactivation_refused_while_future_booking_exists` |
+| Unlimited login attempts (P8) | Security | AI + human: probe script | SDD: NFR-009 slow-down after 5 failures; test `test_sixth_failure_within_15_minutes_is_delayed` |
+| Round 2's lockout let anyone lock a real user out, for one user (N1) or for everyone behind a shared address (N1b) | Security | AI + human: the vibe agent warned about N1; our AI-assisted review found N1b's full scope in the agent's own test | SDD: slow down, never lock (clarify answer 1, NFR-009); test `test_correct_password_still_logs_in_after_many_failures` |
+| The lockout check isn't atomic, so parallel requests get extra guesses (R1) | Security (race condition) | AI + human: AI-assisted code review | SDD: accounts are never locked, so there is no lock to race. Parallel guesses each wait 2 seconds; the spec records that the slow-down limits one-at-a-time guessing only |
+| A startup job cancelled bookings without recording who did it (R2) | Logic | AI + human: AI-assisted code review | SDD: no automatic cancellations; every cancellation records who made it (FR-015); test `test_admin_cancellation_records_the_admin` |
+| Times without an offset were read as UTC (P6); in round 2, responses switched from UTC to local time without anyone asking | Compliance (API contract) | AI + human: probe script and our comparison of the two rounds | SDD: FR-017 rejects times without an offset and always returns UTC; tests `test_time_without_offset_refused`, `test_offset_input_returned_as_utc` |
+| No limit on booking length or time of day (P1, P2) | Logic | AI + human: probe script | SDD: FR-012, 08:00–18:00 Helsinki time and at most 4 hours; test `test_booking_rules_refused_with_message` |
+| Weak passwords such as `aaaaaaaa` accepted (P7) | Security | AI + human: probe script | SDD: FR-002 requires 10–128 characters; test `test_password_length` |
+| **SDD version** | | | |
+| NFR-006 (every request under 500 ms) contradicted NFR-009 (a deliberate 2-second delay) | Compliance (specification) | AI: the clarify step | Fixed in the spec before planning: delayed logins are exempt from NFR-006 |
+| The generated task list put the 80% coverage gate first, which would have failed CI on every pull request | Compliance (constitution: CI must pass) | AI + human: review of the task list before group A | Gate moved to the last group (T035) and a health smoke test added, before any code |
+| "Not found" tests passed before the endpoint existed, because FastAPI also answers 404 for a missing route | Logic (test validity) | AI + human: the failing-first check in groups C and D | The tests now also check the error message, so they fail until the real endpoint exists |
+| The first design of the slow-down waited while holding the database transaction, which would have stalled every other request | Security (denial of service) | AI + human: design review before coding | Commit before waiting; guard test `test_a_delayed_login_does_not_block_other_requests`, proven by a mutation check (5.1) |
+| In external mode, the documentation test read the SDD app's own `/openapi.json` instead of the server under test, so against vibe it would have checked the wrong documentation | Logic (test validity) | AI + human: while preparing the vibe comparison run | Fixed to ask the server under test (commit `56305bb`) |
+
+> **Note:** The findings files ([`vibe-round-1/findings.md`](../evidence/vibe-round-1/findings.md), [`vibe-round-2/findings.md`](../evidence/vibe-round-2/findings.md)) say that the probe was prompted by Ivar Lehvonen and name one of us for each review. In reality we did this work together. We worked through Ivar Lehvonen's Claude account, so the AI-written logs give the credit to the account holder alone.
+
+The detailed probe results behind the vibe rows follow. Round 1 (commit `75113b5`):
+
+
+| ID | Check | Result | Type | Severity |
+|---|---|---|---|---|
+| P4a | `GET /rooms/{id}` with id 2^70 | Unhandled error, HTTP 500 | Bug: input validation | High |
+| P4b | `POST /bookings` with room_id 2^70 | Unhandled error, HTTP 500 | Bug: input validation | High |
+| P5 | Booking on 9999-12-31 23:00 at UTC-5 (past year 9999 in UTC) | Unhandled error, HTTP 500 | Bug: input validation | Medium |
+| P3 | Admin deactivates a room with future bookings | Bookings stay `active`, but the owner gets 404 on the room | Bug: logic | Medium |
+| P1 | One user books one room for 10 years | Accepted | Unspecified in prompt → agent chose no maximum length | Medium |
+| P8 | 50 wrong passwords, then the right one | All 401, then login succeeds | Unspecified in prompt → agent chose no lockout or delay (security) | Medium |
+| P2 | Booking 03:00–04:00 | Accepted | Unspecified in prompt → agent chose no opening hours | Low |
+| P6 | Time sent without an offset, meant as Helsinki summer time (UTC+3) | Stored as UTC, 3 hours off | Unspecified in prompt → agent chose to read naive times as UTC | Low |
+| P7 | Register with password `aaaaaaaa` | Accepted | Unspecified in prompt → agent chose length ≥ 8 as the only rule (security) | Low |
+| OK1 | Overlapping booking on the same room | Rejected, 409 | — | Holds |
+| OK2 | Another user cancels someone's booking | Refused, 404 | — | Holds |
+| OK3 | Booking in the past | Rejected, 422 | — | Holds |
+| OK4 | End before start | Rejected, 422 | — | Holds |
+| OK5 | Password storage (white-box) | Salted PBKDF2-SHA256, not plain text | — | Holds |
+
+Severity: High = any logged-in user can cause an unhandled error with one call; Medium = wrong data or abuse possible; Low = surprising but documented or minor.
+
+Round 2 (commit `b68a979`) fixed all nine but introduced N1 and N1b:
+
+| ID | Check | Round 1 (`75113b5`) | Round 2 (`b68a979`) |
+|---|---|---|---|
+| P4a | `GET /rooms/{id}` with id 2^70 | HTTP 500 | 422, ID must be ≤ 2^63−1 |
+| P4b | `POST /bookings` with room_id 2^70 | HTTP 500 | 422, ID must be ≤ 2^63−1 |
+| P5 | Booking on 9999-12-31 23:00 at UTC-5 | HTTP 500 | 422, out of range |
+| P3 | Admin deactivates a room with future bookings | Booking stays `active` | Booking `cancelled` in the same step |
+| P1 | One user books one room for 10 years | Accepted | 422, at most 8 hours |
+| P8 | 50 wrong passwords, then the right one | All 401, then success | 401 then 429; locked out |
+| P2 | Booking 03:00–04:00 UTC (outside Helsinki opening hours) | Accepted | 422, only 07:00–20:00 local time |
+| P6 | Time sent without an offset, meant as Helsinki local time | Read as UTC, so 3 hours off | Read as Helsinki time; still stored as UTC, but returned in local time (`+03:00` in summer, `+02:00` in winter) |
+| P7 | Register with password `aaaaaaaa` | Accepted | 422, at least 10 characters |
+| **N1** | **New:** an attacker sends 5 wrong passwords for alice, then alice logs in correctly | — | **429: alice is locked out** |
+| **N1b** | **New:** 20 wrong logins for 20 non-existent usernames from one IP, then alice logs in correctly from the same IP | — | **429: alice is locked out.** Any shared address (campus or office NAT, a proxy) locks out everyone behind it. The agent's own test `test_login_lockout_per_ip_across_usernames` asserts exactly this. |
+| OK1 | Overlapping booking | Rejected, 409 | Rejected, 409 |
+| OK2 | Another user cancels someone's booking | Refused, 404 | Refused, 404 |
+| OK3 | Booking in the past | Rejected, 422 | Rejected, 422 ("Cannot book a time in the past") |
+| OK4 | End before start | Rejected, 422 | Rejected, 422 |
+| OK5 | Password storage (white-box) | Salted PBKDF2-SHA256 | Salted PBKDF2-SHA256 |
+
+**Found in code review (no probe check)**
+
+| ID | Issue | Where | Type |
+|---|---|---|---|
+| R1 | The lockout check isn't atomic. `lockout_seconds()` runs before the failed attempt is recorded, and outside a transaction, so parallel requests can get more than 5 guesses in. Single-request tests can't show it. | `vibe/app/routers/auth.py`, `login()` | Security (race condition) |
+| R2 | The startup cleanup is inconsistent with `PATCH /rooms`. It cancels bookings in inactive rooms but leaves `cancelled_by` empty, while PATCH records the admin. It also runs on every startup and changes data without anyone asking. | `vibe/app/db.py`, `init_db()` | Logic |
 
 ### 5.3 Test Execution Results
 
-<!-- Per test: expected result, actual result, pass/fail. Evidence (screenshots, console output, logs) in docs/evidence/.
-Defects and how they were resolved or why not. Metrics: executed, passed, failed, coverage. -->
+**Metrics.** The final run of the SDD version on 2026-10-16: **186 tests executed, 186 passed, 0 failed**, with **94.83% code coverage** (CI requires 80%). The only file well below 100% is `app/cli.py` (57%), the operator's command for creating admins, which the tests call directly rather than from the command line.
+
+The table shows representative tests from each requirement area. All 186 tests and the requirements they cover are listed in [`traceability.md`](../../sdd/specs/001-room-booking-api/traceability.md).
 
 | Test | Expected | Actual | Pass/Fail |
 |---|---|---|---|
-| | | | |
+| `test_wrong_password_and_unknown_user_get_the_same_refusal` (FR-004) | Same 401 and the same message for a wrong password and an unknown user | Identical 401 responses | Pass |
+| `test_password_length` (FR-002) | 9 and 129 characters refused (422); 10 and 128 accepted (201) | As expected | Pass |
+| `test_stored_hash_is_salted_argon2id` (NFR-001) | Stored hashes start with `$argon2id$`, differ for the same password, and don't contain it | As expected | Pass |
+| `test_overlapping_booking_refused` (FR-013) | 10:00–11:00 booked; 10:30–11:30 by another user refused with 409 and a message | 409 with a message | Pass |
+| `test_back_to_back_bookings_allowed` (FR-013) | 09:00–10:00 and 11:00–12:00 next to 10:00–11:00 accepted | All three 201 | Pass |
+| `test_booking_rules_refused_with_message` (FR-012) | 07:30–08:30, 17:00–18:30, 09:00–13:30 and an overnight booking refused with 422, naming the rule | 422, each naming its rule | Pass |
+| `test_offset_input_returned_as_utc` (FR-017) | 09:00+03:00 stored and returned as 06:00Z | Returned in UTC with `Z`, same instant | Pass |
+| `test_one_booking_splits_the_free_time` (FR-010) | With 10:00–11:00 booked, free time is 08:00–10:00 and 11:00–18:00 (in UTC) | As expected | Pass |
+| `test_cancel_someone_elses_booking_forbidden` (NFR-003) | Another user's cancel refused with 403; booking still there | 403; booking unchanged | Pass |
+| `test_deactivation_refused_while_future_booking_exists` (FR-009) | 409 saying "has 1 active booking"; allowed after the booking is cancelled | As expected | Pass |
+| `test_huge_room_id_gives_422` (NFR-004) | `GET /rooms/2^70` gives 422, not 500 | 422 | Pass |
+| `test_twenty_simultaneous_requests_create_exactly_one_booking` (NFR-005) | 20 simultaneous requests for one slot: one 201, nineteen 409 | One 201, nineteen 409 | Pass |
+| `test_sixth_failure_within_15_minutes_is_delayed` (NFR-009) | After 5 failures, the 6th attempt waits at least 2 seconds | Delayed by at least 2 seconds | Pass |
+| `test_correct_password_still_logs_in_after_many_failures` (NFR-009) | After 6 failures, the correct password still logs in (200) | 200, after the delay | Pass |
+| `test_every_operation_under_500_ms_with_1000_bookings` (NFR-006) | Every operation under 500 ms with 1,000 bookings stored | All under 500 ms | Pass |
+| `test_no_undocumented_endpoints` (NFR-007) | Every endpoint in `/openapi.json` is in the contract, and the reverse | As expected | Pass |
+
+**CI.** The same suite ran in GitHub Actions on the final SDD pull request (#28): 186 passed, coverage 94.83% ([run](https://github.com/Lehvonen/RoomAPI/actions/runs/38898383842)).
+
+![CI run of PR #28: 186 passed, 94.83% coverage](../evidence/ci-run.png)
+
+**Defects.** No test failed in the final run. The defects found while building the SDD version are listed in the second part of the audit log (5.2). Each was fixed before its pull request was merged, so none is left open. The vibe version's failures below were deliberately not fixed: we froze the vibe version at commit `b68a979` after round 2, so that it stays an honest record of what vibe coding produced. Fixing it would have turned it into a third, partly specified version.
+
+**Coverage per file** ([`run-in-process.txt`](../evidence/sdd/run-in-process.txt)):
+
+```text
+Name                      Stmts   Miss  Cover   Missing
+-------------------------------------------------------
+app\__init__.py               0      0   100%
+app\cli.py                   47     20    57%   29, 31, 41-42, 49-67, 71
+app\config.py                23      1    96%   34
+app\db.py                    24      0   100%
+app\main.py                  26      1    96%   45
+app\models.py                54      1    98%   28
+app\routers\__init__.py       0      0   100%
+app\routers\auth.py          42      0   100%
+app\routers\bookings.py      50      0   100%
+app\routers\rooms.py         70      0   100%
+app\schemas.py               70      0   100%
+app\security.py              45      1    98%   67
+app\timerules.py             33      1    97%   14
+-------------------------------------------------------
+TOTAL                       484     25    95%
+Required test coverage of 80% reached. Total coverage: 94.83%
+============================ 186 passed in 42.59s =============================
+```
+
+**The same tests against both versions.** The same black-box acceptance suite ran over HTTP against both versions on 2026-10-16: 155 tests that can run over HTTP, plus 11 that need the test database and were skipped. The SDD version passes all 155 that can run over HTTP. The vibe version (frozen at `b68a979`) passes 114 and fails 41. None of the 41 failures is a crash. 17 are interface differences, 11 are missing error documentation, and 13 are rules the vibe agent chose itself where the team's spec decided otherwise. Four of those 13 are login tests: vibe locks the account (429) instead of slowing it down, and in two of them a correct password is refused (N1).
+
+| Run | Server | Passed | Failed | Skipped | Raw result |
+|---|---|---|---|---|---|
+| In-process, with coverage | SDD (`sdd/`) | 186 | 0 | 0 | [`run-in-process.txt`](../evidence/sdd/run-in-process.txt) (coverage 94.83%, gate 80%) |
+| External HTTP | SDD, uvicorn | 155 | 0 | 11 | [`run-external-sdd.xml`](../evidence/sdd/run-external-sdd.xml) |
+| External HTTP | vibe `b68a979`, uvicorn | 114 | 41 | 11 | [`run-external-vibe.xml`](../evidence/sdd/run-external-vibe.xml) |
+| External HTTP, N1b test only | vibe, default settings | 0 | 1 | 0 | [`run-external-vibe-default-ip-limit.xml`](../evidence/sdd/run-external-vibe-default-ip-limit.xml) |
+
+| Category | Tests | Kind |
+|---|---|---|
+| times returned with +03:00, not UTC Z | 5 | Interface difference |
+| no GET /bookings/me (vibe lists own bookings at GET /bookings) | 4 | Interface difference |
+| availability takes start/end, not date (date is ignored) | 7 | Interface difference |
+| someone else's booking gives 404, not 403 | 1 | Interface difference |
+| error responses not described in /openapi.json | 11 | Documentation |
+| 07:00–20:00 and 8 h, not 08:00–18:00 and 4 h | 4 | Decision the spec made differently |
+| no booking horizon | 1 | Decision the spec made differently |
+| times without an offset read as Helsinki time | 1 | Decision the spec made differently |
+| stricter passwords (5 distinct characters) | 2 | Decision the spec made differently |
+| deactivation cancels bookings instead of being refused | 1 | Decision the spec made differently |
+| lockout (429) instead of slow-down; a correct password refused in 2 (N1) | 4 | Decision the spec made differently |
+| **Total** | **41** | |
 
 ## 6. Project Management & AI Toolchain Workflows (3 points)
 
