@@ -642,25 +642,115 @@ Git activity on GitHub as of 2026-10-19:
 | Pull request reviews | 0 | 11 |
 | Issues assigned | 14 | 4 |
 
-<!-- TODO (us): update the table before submitting, once Kristoffer's sections (#5, #7, #8, #10) are merged. -->
-
 ## 7. Reflections on Specification-Driven Development (5 points)
 
 ### 7.1 Benefits of AI-Assisted SDD
 
+**We made the decisions, not the agent.** This was the biggest difference between the two versions. The vibe prompt named features but not rules, so the agent filled every gap with its own choice: 07:00–20:00 opening hours, an 8-hour maximum, a lockout after failed logins, and Helsinki time in the responses. None of these was wrong in itself, but nobody had agreed to them. In SDD, the specify prompt named the open questions, and clarify found four more. We answered all of them before planning. The vibe comparison shows the result: 13 of vibe's 41 failing tests are rules the spec decided one way and the vibe agent decided another (see 5.3).
+
+**Every requirement is tested, and we can show it.** The traceability table maps all 17 FRs, 9 NFRs and 5 success criteria to tests, except SC-001 (booking a room in under 2 minutes), which is a manual check. The SDD version has 186 tests against vibe's 33, with roughly the same amount of application code (about 870 lines against 900). The extra effort went into specifying and testing, not into more code.
+
+**Tests we could trust.** Writing the tests first and committing them while they failed caught tests that passed for the wrong reason, the "not found" tests in groups C and D. Mutation checks proved that the concurrency test and the slow-down tests catch the faults they are meant to catch. In the vibe version, the agent's own test even asserted the N1b lockout as correct behaviour, because nothing told it otherwise.
+
+**Problems found on paper, not in production.** Clarify exposed the conflict between NFR-006 (500 ms) and NFR-009 (a 2-second delay) before any code existed. The design review caught a slow-down that would have stalled every other request before it was written. In the vibe version, the equivalent problems (N1, N1b) were only found by probing the finished code.
+
+**The spec is reviewable.** The constitution, spec, plan and tasks are Markdown files in Git. We reviewed them in pull requests like code, and the history shows when each decision was made.
+
 ### 7.2 Core Bottlenecks and Challenges
+
+**More work before any code.** The SDD version needed 11 prompts and about 990 lines of specification, plan and task documents before and alongside the code, while the vibe version needed 2 prompts. For a small API this upfront work is most of the effort. We kept each step small and reviewed all the specification files together in PR #22 before any code was written, so a mistake in the spec couldn't travel into the code.
+
+**Reviewing what the AI produces.** The agent writes much faster than we can read. Each implementation pull request contained a full story's tests and code, and the spec documents were long. We handled this by splitting the work into six issue groups, each one pull request, and by reading the tests first: if the tests matched the spec, the code only had to pass them.
+
+**The toolkit didn't fit everything we needed.** Spec Kit's spec template has no stakeholder section and no numbered NFRs, and it treats tests as optional. We added these through the constitution and our prompts. Its first task list also put the coverage gate where it would have failed CI on every pull request, which we had to move by hand.
+
+**Test-first worked less well for NFRs.** In group F, 58 of the 61 NFR tests passed before any new code, because the earlier stories had already built those properties in. They guard against future regressions, but they didn't drive the design. We used mutation checks to show that the key tests still catch real faults.
+
+**Testing two versions with one suite.** The vibe version's per-IP lockout locked our test runner out after 20 failed logins, so every later test failed with 429. We raised that limit through a setting vibe itself documents, and measured the N1b weakness separately with vibe's default settings. 11 tests that need direct database access can't run against an external server at all.
+
+**Credit in AI-written logs.** We worked through one Claude account, Ivar Lehvonen's, so the logs the AI wrote credit that account holder for work we did together. We added notes in this report where that happens (2.6, 4.3, 4.5, 5.2).
 
 ### 7.3 Lessons Learned & Best Practices
 
 <!-- Critical evaluation backed by concrete examples; evidence-based vibe coding vs SDD comparison;
 successes and limitations; actionable best practices; balanced conclusion. -->
 
-<!-- Evidence to quote in the vibe-vs-SDD comparison: in vibe round 2 the agent changed API responses
-from UTC (Z) to local time (+03:00) without being asked, a contract change nobody agreed to
-(docs/evidence/vibe-round-2/findings.md, "What round 2 decided on its own"). -->
+**Vibe coding against SDD, with evidence.** We built the same features twice with the same agent and model, and ran the same 155 black-box acceptance tests against both.
+
+| | Vibe version | SDD version |
+|---|---|---|
+| Prompts | 2 | 11 |
+| Specification documents | None (the prompt only) | Constitution, spec, plan, research, data model, contract, tasks (about 990 lines) |
+| Application code | about 900 lines | about 870 lines |
+| Own tests | 33 | 186, 94.83% coverage |
+| SDD acceptance suite over HTTP | 114 of 155 pass | 155 of 155 pass |
+| Server errors found by probing | 3 in round 1 (fixed in round 2) | 0 (NFR-004 has its own invalid-input test set) |
+| Rules decided by the agent alone | All of them | None alone: every rule was written down and reviewed before any code, and the open ones were decided by us |
+
+Vibe coding was fast and produced working code for everything we asked for. Its problems came from what we didn't ask for. When we fixed round 1's problems by naming the symptoms in the round-2 prompt, the agent invented new rules to fix them, and some created new problems. The clearest example: in round 2 the agent changed every API response from UTC (`Z`) to local time (`+03:00`) without being asked. That is a contract change that breaks existing clients, and nobody agreed to it ([`vibe-round-2/findings.md`](../evidence/vibe-round-2/findings.md)). The full list of what round 2 decided on its own:
+
+None of these numbers or behaviours were in the prompt:
+
+- Maximum booking 8 hours; bookings only 07:00–20:00 local time, within one day
+- Time zone `Europe/Helsinki`. **Responses switched from UTC (`Z`) to local time with an offset (`+03:00`), an API contract change nobody asked for**: existing clients get a different format. Bookings stored before round 2 are not corrected.
+- Passwords: at least 10 characters, letters plus a digit or symbol, at least 5 different characters, not containing the username, not on a common-password list
+- Lockout: 5 failures per username or 20 per IP within 15 minutes, answered with 429. The agent warned that this lets anyone lock a user out (N1) and that behind a proxy all users share one IP limit; N1b shows the same happens with any shared address.
+- Deactivating a room cancels its upcoming bookings. At every startup the app also cancels upcoming bookings in rooms that were already inactive, without recording who cancelled them (R2).
+
+**Best practices.** From this project we would recommend:
+
+1. **Write the rules down before the agent sees the feature list.** A constitution of a few principles prevented whole classes of bugs: server errors on bad input, times without a time zone, untested code.
+2. **Name the open questions in the specify prompt, and always run clarify.** Every gap you leave, the agent fills on its own.
+3. **Ask for what the toolkit leaves out.** Our NFRs and stakeholders only exist because the prompt asked for them.
+4. **Commit the tests while they fail.** It proves the order and catches tests that pass for the wrong reason.
+5. **Limit each implement prompt to one group of tasks** ("do not continue after T0xx"), so each pull request stays small enough to review.
+6. **Feed each review into the next prompt.** Three of our prompts include fixes from the previous review.
+7. **Prove the important tests with mutation checks.** A green test only means something if it turns red when the code is wrong.
+8. **Make tests black-box where possible.** The same suite then checks any version of the system, including one written by someone else.
+9. **Log every prompt with its purpose and result**, as it happens. It is far harder to reconstruct afterwards.
+
+**Conclusion.** SDD didn't make the AI smarter. It made the AI's guesses visible and moved the decisions back to us. The cost is real: many more prompts, long documents to read, and tests that only check what the spec says. For a throwaway prototype, vibe coding is faster and good enough. For anything with security rules, time zones or other users depending on its interface, the SDD version was clearly better: it passed every acceptance test, while the vibe version failed 41 and locked real users out. The specification is also only as good as the questions asked. Areas we never specified, such as scale beyond one machine, remain untested in both versions.
 
 ### 7.4 Proposed Specification-Driven Development Workflow
 
 <!-- A reusable workflow: each phase's objectives, activities, inputs, outputs and deliverables;
 where AI/vibe coding fits and where human oversight is essential; justification from project evidence;
 a process diagram. -->
+
+Based on this project, we propose the following workflow. It keeps Spec Kit's steps and adds the human gates and test checks that made the difference for us. The AI drafts in every phase. A human decides at every gate.
+
+```mermaid
+flowchart TD
+    C["0. Constitution<br/>AI drafts, team approves"] --> S["1. Specify<br/>AI drafts spec, open questions named"]
+    S --> Q{"2. Clarify<br/>team answers every question"}
+    Q -- "conflict or gap found" --> S
+    Q --> P["3. Plan<br/>AI designs: stack, data model, API contract"]
+    P --> G1{"Gate: Constitution Check<br/>and team review of spec + plan"}
+    G1 -- "rejected" --> S
+    G1 --> T["4. Tasks<br/>AI splits work into issue-sized groups"]
+    T --> TF["5. Tests first<br/>AI writes tests from acceptance criteria,<br/>commits them while failing"]
+    TF --> I["6. Implement<br/>AI codes one group until tests pass"]
+    I --> V["7. Verify<br/>CI + coverage gate,<br/>mutation checks, probing"]
+    V --> R{"8. Review<br/>team reads tests, then code"}
+    R -- "changes needed" --> I
+    R -- "spec was wrong" --> S
+    R -- "merged" --> N{"More groups?"}
+    N -- "yes, with review findings<br/>added to the next prompt" --> TF
+    N -- "no" --> E["9. Evidence<br/>traceability, test runs, report"]
+```
+
+| Phase | Objective | Activities | Input | Output / deliverable | AI's role | Human's role | Evidence from this project |
+|---|---|---|---|---|---|---|---|
+| 0. Constitution | Fix the non-negotiable rules | Write principles, stack, workflow | Lessons from earlier work (our vibe version) | `constitution.md` | Drafts | Approves every principle | Its four rules each answer a vibe failure; none of those failures came back |
+| 1. Specify | Turn the idea into testable requirements | Stakeholders, user stories, numbered FRs and NFRs, acceptance criteria | Feature list, constitution | `spec.md` | Drafts the full spec | Names open questions in the prompt; reviews the spec | Asking for NFRs explicitly gave us NFR-001 to NFR-008, which the template lacks |
+| 2. Clarify | Remove ambiguity before design | Agent asks questions; team answers | `spec.md` | Updated `spec.md` | Finds ambiguities, suggests answers | **Decides every answer** | Created NFR-009 and found the NFR-006/NFR-009 conflict before any code |
+| 3. Plan | Fix the technical design | Stack, research decisions, data model, API contract | Spec, constitution | `plan.md`, `research.md`, `data-model.md`, `contracts/` | Designs and records alternatives | **Gate:** checks the plan against the constitution and spec | The contract mapped every endpoint to a requirement; R5 bounded every input that crashed vibe |
+| 4. Tasks | Break the work into reviewable pieces | Ordered tasks, grouped into issues | Plan | `tasks.md`, GitHub issues | Generates tasks and groups | Checks the order and the groups | 37 tasks in 6 groups gave 6 pull requests; we moved the coverage gate here |
+| 5. Tests first | Specify behaviour as executable checks | Write tests from acceptance criteria, run them, commit while failing | Spec, tasks | Failing tests in Git | Writes the tests | Checks the tests against the spec | Caught "not found" tests passing for the wrong reason |
+| 6. Implement | Make the tests pass | Code one group of tasks only | Failing tests, plan | Code, tasks marked done | Writes the code; **this is where vibe coding fits**, inside fixed tests and contract | Writes the prompt that limits the scope | 186 tests, 94.83% coverage, all six groups merged |
+| 7. Verify | Prove the code and the tests | CI, coverage gate, mutation checks, probing, black-box runs | Code, tests | CI result, evidence files | Runs checks, reports results | Decides which tests need mutation checks | Mutation checks proved the concurrency and slow-down tests |
+| 8. Review and merge | Keep a human responsible for every change | Read tests, then code; merge or send back | Pull request | Merged change; findings for the next prompt | Fixes review findings | **Approves every merge** | Three review findings fed into the next group's prompt |
+| 9. Evidence | Show that the system meets the spec | Traceability table, saved test runs, report | Everything above | `traceability.md`, `docs/evidence/`, report | Collects and formats | Checks every claim | Every FR and NFR maps to a passing test |
+
+**Where AI and vibe coding fit.** We would let the AI work freely where its output is checked automatically: drafting documents, writing tests from acceptance criteria, and writing code inside fixed tests and a fixed contract. That is vibe coding with guardrails. **Where human oversight is essential.** Decisions the spec leaves open (clarify), the checks of the plan against the rules, the review of the tests before the code, and every merge. Our vibe version shows what happens without these gates: the agent made every decision itself, and some of them locked real users out.
+
